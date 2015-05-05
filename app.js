@@ -23,7 +23,7 @@ var client = new Twit({
     access_token_secret: 't4CYTgXvynLowSIEHDCrNYRFOrvrgwH9KhHwCOps1qovq'
 });
 
-var tracksToWatch = ['road', 'rain', 'wind', 'storm', 'cloud', 'destroy', 'clouds', 'damage', 'raining', 'flood', 'cloudy', 'windy', 'flooding', 'alwx', 'snow', 'thunder'];
+var tracksToWatch = ['road', 'rain', 'wind', 'storm', 'cloud', 'destroy', 'clouds', 'damage', 'raining', 'flood', 'cloudy', 'windy', 'flooding', 'alwx', 'snow', 'thunder','nepal'];
 var trackCountPairs = {
     total: 0,
     tracks: {}
@@ -45,16 +45,11 @@ stream.on('tweet', function (tweet) {
                 trackCountPairs.total++;
                 var updatedData = {
                     key: v,
-                    newCount: trackCountPairs.tracks[v]
+                    newCount: trackCountPairs.tracks[v],
+                    incomeSelector: v,
+                    tweetData: tweet.text
                 }
                 io.emit('data', updatedData);
-                // clear the command propmt and update total
-                process.stdout.write("\u001b[2J\u001b[0;0H");
-                console.log("Total: " + trackCountPairs.total);
-                _.each(tracksToWatch, function (c) {
-                    var percentage = Math.floor(trackCountPairs.tracks[c] / trackCountPairs.total * 100);
-                    console.log(c + ": " + percentage + "%");
-                });
             }
         });
     }
@@ -62,7 +57,15 @@ stream.on('tweet', function (tweet) {
 
 io.on('connection', function (socket) {
     socket.emit('initialData', trackCountPairs);
+    socket.on('updatestream', function (newTrack) {
+        tracksToWatch.push(newTrack);
+        trackCountPairs.tracks[newTrack] = 0;
+        socket.emit('initialData', trackCountPairs);
+    });
 });
+
+
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
