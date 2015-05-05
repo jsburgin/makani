@@ -1,14 +1,68 @@
-var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+var express = require('express'),
+    routes = require('./routes'),
+    http = require('http'),
+    path = require('path'),
+    logger = require('morgan'),
+    cookieParser = require('cookie-parser'),
+    bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
 
 var app = express();
+var server = app.listen(8080);
+var io = require('socket.io').listen(server);
+
+var Twit = require('twit');
+var _ = require('underscore');
+
+var client = new Twit({
+    consumer_key: 'FgELKMIIN0JIaBvXed9tf5VXL',
+    consumer_secret: 'ZTeiKBrcemKUvEQlQiogu0SGJGSdql1uRqQJgePTowS9ciKgcQ',
+    access_token: '3198420411-4hfcCJYZRGL3w5GC3SCGyfH60Y8IaAF68QpXhvo',
+    access_token_secret: 't4CYTgXvynLowSIEHDCrNYRFOrvrgwH9KhHwCOps1qovq'
+});
+
+var tracksToWatch = ['road', 'rain', 'wind', 'storm', 'cloud', 'destroy', 'clouds', 'damage', 'raining', 'flood', 'cloudy', 'windy', 'flooding', 'alwx', 'snow', 'thunder'];
+var trackCountPairs = {
+    total: 0,
+    tracks: {}
+}
+
+_.each(tracksToWatch, function (v) {
+    trackCountPairs.tracks[v] = 0;
+});
+
+var stream = client.stream('statuses/filter', { track: tracksToWatch });
+
+stream.on('tweet', function (tweet) {
+    var verifyInTweet = false;
+    if (tweet.text !== undefined) {
+        var text = tweet.text.toLowerCase();
+        _.each(tracksToWatch, function (v) {
+            if (text.indexOf(v.toLowerCase()) !== -1) {
+                trackCountPairs.tracks[v]++;
+                trackCountPairs.total++;
+                var updatedData = {
+                    key: v,
+                    newCount: trackCountPairs.tracks[v]
+                }
+                io.emit('data', updatedData);
+                // clear the command propmt and update total
+                process.stdout.write("\u001b[2J\u001b[0;0H");
+                console.log("Total: " + trackCountPairs.total);
+                _.each(tracksToWatch, function (c) {
+                    var percentage = Math.floor(trackCountPairs.tracks[c] / trackCountPairs.total * 100);
+                    console.log(c + ": " + percentage + "%");
+                });
+            }
+        });
+    }
+});
+
+io.on('connection', function (socket) {
+    socket.emit('initialData', trackCountPairs);
+});
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

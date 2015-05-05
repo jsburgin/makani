@@ -1,0 +1,24 @@
+body {
+	padding-top: 65px;
+}
+
+.track-percent-stats h5 {
+	text-align: center;
+}
+
+.track-percent-stats, .track-heatmap {
+	margin-top: 30px;
+}
+
+.percent-stat-box {
+	background: #eee;
+	border-left: 2px solid #fff;
+	border-right: 2px solid #fff;
+}
+
+.heatmap-entry {
+	background: #eee;
+	border: 1px solid #fff;
+	text-align: center;
+	padding: 10px;
+}
