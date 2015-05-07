@@ -27,6 +27,7 @@ body {
 
 .income-tweet-container div {
     margin-top: 5px;
+    overflow-x: hidden !important;
 }
 
 .toggle-incoming {
@@ -44,4 +45,17 @@ body {
 
 .toggle-incoming-button {
     cursor: pointer;
+}
+
+.title-box {
+    margin-bottom: 14px;
+    border-bottom: 1px solid #393B47;
+}
+
+.incoming-tweets .title-box {
+    overflow: auto;
+}
+
+.filter-heatmap {
+    margin-top: 14px;
 }

@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -72,11 +72,11 @@
     <script src="/js/bootstrap.min.js"></script>
     <script src="/js/twitterfeed.js"></script>
     <script>
-        
         $(function () {
             var socket = io();
             var incomeSelector = 'all';
             var runTweetFeeder = true;
+            addedTracks = [];
             $('.toggle-incoming-button').click(function () {
                 if (runTweetFeeder) {
                     runTweetFeeder = false;
@@ -86,12 +86,12 @@
                     runTweetFeeder = true;
                     $('.toggle-incoming-button').removeClass('glyphicon-play');
                     $('.toggle-incoming-button').addClass('glyphicon-pause');
-                }
+                };
             });
             $('.income-tweet-text').html(incomeSelector);
             socket.on('initialData', function (data) {
                 for (var key in data.tracks) {
-                    $('.track-heatmap .row').append('<div class="col-md-2 heatmap-entry" id="' + key + '">' + key + ': ' + '<span class="count">' + data.tracks[key] + '</span></div>');
+                    $('.track-heatmap .row').append('<div class="col-md-2 heatmap-entry" id="' + key + '">' + key + ': ' + '0</div>');
                 };
             });
             $('body').on('click', '.heatmap-entry', function (event) {
@@ -102,7 +102,7 @@
             });
             socket.on('data', function (data) {
                 var trackContainer = document.getElementById(data.key);
-                $('div#' + data.key + ' .count').html(data.newCount);
+                $('div#' + data.key).html(data.key + ': ' + data.newCount);
                 trackContainer.classList.remove('highlight');
                 trackContainer.focus();
                 trackContainer.classList.add('highlight');
@@ -117,17 +117,22 @@
                     if (totalTweets >= 10) {
                         $('.income-tweet-container div:last-child').remove();
                     };
-                    $('.income-tweet-container').prepend('<div>' + data.tweetData + '</div>');
-                };
+                    $('.income-tweet-container').prepend('<div>@' + data.tweetAuthor + ': ' + data.tweetData + '</div>');
+                }
+                for (var i = 0; i < 4; i++) {
+                    var text = $('.progress-bar').eq(i).attr('percentvalue');
+                    $('.progress-bar').eq(i).html(text + ' ' + data.highKeys[text.toLowerCase()] + '%');
+                    $('.progress-bar').eq(i).css('width', data.highKeys[text.toLowerCase()] + '%');
+                }
             });
             $('.update-track-button').click(function () {
-                $('.track-heatmap .row div').remove();
                 var newTrack = $('.new-track').val();
+                addedTracks.push(newTrack);
                 socket.emit('updatestream', newTrack);
                 $('.new-track').val('');
+                $('.filter-heatmap .row').append('<div class="col-md-2 heatmap-entry" id="' + newTrack + '">' + newTrack + ': ' + '0</div>');
             });
         });
-        
     </script>
 </body>
 </html>

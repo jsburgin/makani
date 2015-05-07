@@ -23,11 +23,12 @@ var client = new Twit({
     access_token_secret: 't4CYTgXvynLowSIEHDCrNYRFOrvrgwH9KhHwCOps1qovq'
 });
 
-var tracksToWatch = ['road', 'rain', 'wind', 'storm', 'cloud', 'destroy', 'clouds', 'damage', 'raining', 'flood', 'cloudy', 'windy', 'flooding', 'alwx', 'snow', 'thunder','nepal'];
+var tracksToWatch = ['road', 'rain', 'wind', 'storm', 'cloud', 'destroy', 'clouds', 'damage', 'raining', 'flood', 'cloudy', 'windy', 'flooding', 'alwx', 'snow', 'thunder','earthquake', 'tornado','disaster','crash','crashed','tree fallen over', 'thunderstorm', 'lightning'];
 var trackCountPairs = {
     total: 0,
     tracks: {}
 }
+var newTracksToWatch = [];
 
 _.each(tracksToWatch, function (v) {
     trackCountPairs.tracks[v] = 0;
@@ -36,18 +37,24 @@ _.each(tracksToWatch, function (v) {
 var stream = client.stream('statuses/filter', { track: tracksToWatch });
 
 stream.on('tweet', function (tweet) {
-    var verifyInTweet = false;
     if (tweet.text !== undefined) {
         var text = tweet.text.toLowerCase();
         _.each(tracksToWatch, function (v) {
             if (text.indexOf(v.toLowerCase()) !== -1) {
                 trackCountPairs.tracks[v]++;
                 trackCountPairs.total++;
+                var highPercents = {};
+                for (var i = 0; i < 4; i++) {
+                    var percentValue = (trackCountPairs.tracks[tracksToWatch[i]] / trackCountPairs.total * 100).toFixed(2);
+                    highPercents[tracksToWatch[i]] = percentValue;
+                }
                 var updatedData = {
                     key: v,
                     newCount: trackCountPairs.tracks[v],
                     incomeSelector: v,
-                    tweetData: tweet.text
+                    tweetData: tweet.text,
+                    tweetAuthor: tweet.user.name,
+                    highKeys: highPercents
                 }
                 io.emit('data', updatedData);
             }
@@ -56,16 +63,22 @@ stream.on('tweet', function (tweet) {
 });
 
 io.on('connection', function (socket) {
+    var newTracks = [];
     socket.emit('initialData', trackCountPairs);
     socket.on('updatestream', function (newTrack) {
         tracksToWatch.push(newTrack);
+        newTracks.push(newTrack);
         trackCountPairs.tracks[newTrack] = 0;
-        socket.emit('initialData', trackCountPairs);
+    });
+    socket.on('disconnect', function () {
+        console.log(newTracks);
+        for (var i = 0; i < newTracks.length; i++) {
+            var index = tracksToWatch.indexOf(newTracks[i]);
+            tracksToWatch.splice(index, 1);
+            delete trackCountPairs.tracks[newTracks[i]];
+        }
     });
 });
-
-
-
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
