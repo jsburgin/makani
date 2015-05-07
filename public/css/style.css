@@ -25,6 +25,10 @@ body {
 }
 
 
+.income-tweet-container {
+    min-height: 370px;
+}
+
 .income-tweet-container div {
     margin-top: 5px;
     overflow-x: hidden !important;
