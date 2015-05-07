@@ -24,14 +24,18 @@ var client = new Twit({
 });
 
 var tracksToWatch = ['road', 'rain', 'wind', 'storm', 'cloud', 'destroy', 'clouds', 'damage', 'raining', 'flood', 'cloudy', 'windy', 'flooding', 'alwx', 'snow', 'thunder','earthquake', 'tornado','disaster','crash','crashed','tree fallen over', 'thunderstorm', 'lightning'];
+var originalTrackList = [];
 var trackCountPairs = {
     total: 0,
     tracks: {}
 }
 var newTracksToWatch = [];
 
+var timesTrackAdded = {}
+
 _.each(tracksToWatch, function (v) {
     trackCountPairs.tracks[v] = 0;
+    originalTrackList.push(v);
 });
 
 var stream = client.stream('statuses/filter', { track: tracksToWatch });
@@ -64,18 +68,36 @@ stream.on('tweet', function (tweet) {
 
 io.on('connection', function (socket) {
     var newTracks = [];
-    socket.emit('initialData', trackCountPairs);
+    var baseTracksToSend = {
+        total: trackCountPairs.total,
+        tracks: {}
+    }
+    _.each(originalTrackList, function (v) {
+        baseTracksToSend.tracks[v] = trackCountPairs.tracks[v];
+    });
+    socket.emit('initialData', baseTracksToSend);
     socket.on('updatestream', function (newTrack) {
-        tracksToWatch.push(newTrack);
         newTracks.push(newTrack);
-        trackCountPairs.tracks[newTrack] = 0;
+        if (newTrack in timesTrackAdded) {
+            timesTrackAdded[newTrack]++;
+        } else {
+            timesTrackAdded[newTrack] = 1;
+            tracksToWatch.push(newTrack);
+            trackCountPairs.tracks[newTrack] = 0;
+        }
     });
     socket.on('disconnect', function () {
         console.log(newTracks);
         for (var i = 0; i < newTracks.length; i++) {
-            var index = tracksToWatch.indexOf(newTracks[i]);
-            tracksToWatch.splice(index, 1);
-            delete trackCountPairs.tracks[newTracks[i]];
+            if (timesTrackAdded[newTracks[i]] == 1) {
+                var index = tracksToWatch.indexOf(newTracks[i]);
+                tracksToWatch.splice(index, 1);
+                delete trackCountPairs.tracks[newTracks[i]];
+                delete timesTrackAdded[newTracks[i]];
+            } else {
+                timesTrackAdded[newTracks[i]]--;
+            }
+            
         }
     });
 });

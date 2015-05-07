@@ -90,8 +90,9 @@
             });
             $('.income-tweet-text').html(incomeSelector);
             socket.on('initialData', function (data) {
+                $('.track-heatmap .row').html('');
                 for (var key in data.tracks) {
-                    $('.track-heatmap .row').append('<div class="col-md-2 heatmap-entry" id="' + key + '">' + key + ': ' + '0</div>');
+                    $('.track-heatmap .row').append('<div class="col-md-2 heatmap-entry" id="' + key + '">' + key + ': ' + data.tracks[key] + '</div>');
                 };
             });
             $('body').on('click', '.heatmap-entry', function (event) {
@@ -130,7 +131,7 @@
                 addedTracks.push(newTrack);
                 socket.emit('updatestream', newTrack);
                 $('.new-track').val('');
-                $('.filter-heatmap .row').append('<div class="col-md-2 heatmap-entry" id="' + newTrack + '">' + newTrack + ': ' + '0</div>');
+                $('.filter-heatmap .row').append('<div class="col-md-2 heatmap-entry" id="' + newTrack + '">' + newTrack + ': ' + '--</div>');
             });
         });
     </script>
