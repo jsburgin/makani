@@ -23,14 +23,21 @@ var client = new Twit({
     access_token_secret: 't4CYTgXvynLowSIEHDCrNYRFOrvrgwH9KhHwCOps1qovq'
 });
 
-var tracksToWatch = ['road', 'rain', 'wind', 'storm', 'cloud', 'destroy', 'clouds', 'damage', 'raining', 'flood', 'cloudy', 'windy', 'flooding', 'alwx', 'snow', 'thunder','earthquake', 'tornado','disaster','crash','crashed','tree fallen over', 'thunderstorm', 'lightning'];
+// intial tracks + any additional filters added by client
+var tracksToWatch = ['road', 'rain', 'wind', 'storm', 'cloud', 'destroy', 'clouds', 
+                     'damage', 'raining', 'flood', 'cloudy', 'windy', 'flooding', 
+                     'alwx', 'snow', 'thunder', 'earthquake', 'tornado', 'disaster', 
+                     'crash', 'crashed', 'tree fallen over', 'thunderstorm', 'lightning'];
+
+// filled with original tracks on startup and used to send initial data to client
 var originalTrackList = [];
+
 var trackCountPairs = {
     total: 0,
     tracks: {}
 }
-var newTracksToWatch = [];
 
+// keeps track of filters (doesn't remove in-use filters on client disconnect)
 var timesTrackAdded = {}
 
 _.each(tracksToWatch, function (v) {
@@ -48,10 +55,12 @@ stream.on('tweet', function (tweet) {
                 trackCountPairs.tracks[v]++;
                 trackCountPairs.total++;
                 var highPercents = {};
+                // re-calculates percentages
                 for (var i = 0; i < 4; i++) {
                     var percentValue = (trackCountPairs.tracks[tracksToWatch[i]] / trackCountPairs.total * 100).toFixed(2);
                     highPercents[tracksToWatch[i]] = percentValue;
                 }
+
                 var updatedData = {
                     key: v,
                     newCount: trackCountPairs.tracks[v],
@@ -68,6 +77,7 @@ stream.on('tweet', function (tweet) {
 
 io.on('connection', function (socket) {
     var newTracks = [];
+    // generate list of orginal tracks to send to client
     var baseTracksToSend = {
         total: trackCountPairs.total,
         tracks: {}
@@ -75,7 +85,10 @@ io.on('connection', function (socket) {
     _.each(originalTrackList, function (v) {
         baseTracksToSend.tracks[v] = trackCountPairs.tracks[v];
     });
+    
     socket.emit('initialData', baseTracksToSend);
+    
+    // adds additional filters in addition to items being tracked
     socket.on('updatestream', function (newTrack) {
         newTracks.push(newTrack);
         if (newTrack in timesTrackAdded) {
@@ -86,6 +99,8 @@ io.on('connection', function (socket) {
             trackCountPairs.tracks[newTrack] = 0;
         }
     });
+    
+    // removes any filters added by client
     socket.on('disconnect', function () {
         console.log(newTracks);
         for (var i = 0; i < newTracks.length; i++) {
@@ -106,8 +121,6 @@ io.on('connection', function (socket) {
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));

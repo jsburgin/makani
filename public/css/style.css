@@ -1,3 +1,26 @@
+@-webkit-keyframes yellow-fade {
+    0% {
+        background: greenyellow;
+    }
+    100% {
+        background: #eee;
+    }
+}
+
+@keyframes yellow-fade {
+    0% {
+        background: greenyellow;
+    }
+    100% {
+        background: #eee;
+    }
+}
+
+.highlight {
+    -webkit-animation: yellow-fade 0.5s ease-in 1;
+    animation: yellow-fade 0.5s ease-in 1;
+}
+
 body {
 	padding-top: 65px;
 }
