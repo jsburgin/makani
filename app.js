@@ -54,21 +54,13 @@ stream.on('tweet', function (tweet) {
             if (text.indexOf(v.toLowerCase()) !== -1) {
                 trackCountPairs.tracks[v]++;
                 trackCountPairs.total++;
-                var highPercents = {};
-                // re-calculates percentages
-                for (var i = 0; i < 4; i++) {
-                    var percentValue = (trackCountPairs.tracks[tracksToWatch[i]] / trackCountPairs.total * 100).toFixed(2);
-                    highPercents[tracksToWatch[i]] = percentValue;
-                }
-
                 var updatedData = {
                     key: v,
                     newCount: trackCountPairs.tracks[v],
                     incomeSelector: v,
                     tweetData: tweet.text,
                     tweetAuthor: tweet.user.name,
-                    highKeys: highPercents
-                }
+                };
                 io.emit('data', updatedData);
             }
         });
@@ -81,7 +73,7 @@ io.on('connection', function (socket) {
     var baseTracksToSend = {
         total: trackCountPairs.total,
         tracks: {}
-    }
+    };
     _.each(originalTrackList, function (v) {
         baseTracksToSend.tracks[v] = trackCountPairs.tracks[v];
     });
@@ -97,6 +89,7 @@ io.on('connection', function (socket) {
             timesTrackAdded[newTrack] = 1;
             tracksToWatch.push(newTrack);
             trackCountPairs.tracks[newTrack] = 0;
+            console.log(trackCountPairs.tracks);
         }
     });
     

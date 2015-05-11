@@ -1,28 +1,33 @@
 @-webkit-keyframes yellow-fade {
     0% {
-        background: greenyellow;
+        background: #37bb98;
     }
     100% {
-        background: #eee;
+        background: #2e3135;
+        color: #fff;  
     }
 }
 
 @keyframes yellow-fade {
     0% {
         background: greenyellow;
+        color: #000;
     }
     100% {
-        background: #eee;
+        background: #393939;
+        color: #fff;
     }
 }
 
 .highlight {
-    -webkit-animation: yellow-fade 0.5s ease-in 1;
     animation: yellow-fade 0.5s ease-in 1;
+    -webkit-animation: yellow-fade 0.5s ease-in 1;
 }
 
 body {
-	padding-top: 65px;
+    color: #fff !important;
+    background: #22252a;
+    padding-bottom: 40px;
 }
 
 .track-percent-stats h5 {
@@ -40,16 +45,11 @@ body {
 }
 
 .heatmap-entry {
-	background: #eee;
-	border: 1px solid #fff;
-	text-align: center;
+	background: #2e3135;
+	border: 1px solid #22252a;
+	cursor: pointer;
 	padding: 10px;
-    cursor: pointer;
-}
-
-
-.income-tweet-container {
-    min-height: 370px;
+    text-align: center;
 }
 
 .income-tweet-container div {
@@ -75,8 +75,8 @@ body {
 }
 
 .title-box {
-    margin-bottom: 14px;
     border-bottom: 1px solid #393B47;
+    margin-bottom: 14px;
 }
 
 .incoming-tweets .title-box {
@@ -85,4 +85,60 @@ body {
 
 .filter-heatmap {
     margin-top: 14px;
+}
+
+input.new-track {
+    background: #25282c;
+    border: 1px solid #191a1b;
+
+    border-radius: 0px;
+    -khtml-border-radius: 0px;
+    -moz-border-radius: 0px;
+    -webkit-border-radius: 0px;
+}
+
+.update-track-button {
+    background: #393939;
+    color: #fff;
+    margin-left: 10px;
+    border: none;
+    border-radius: 2px;
+    -khtml-border-radius: 2px;
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+    
+}
+
+.update-track-button:focus {
+    color: #fff;
+    outline: none !important;
+}
+
+.update-track-button:hover {
+    background: #404040;
+    color: #fff;
+}
+
+.filter-chart {
+    margin-top: 15px;
+}
+
+.filter-chart rect {
+    fill: #37bb98;
+}
+
+.filter-chart text {
+    fill: white;
+    font: 10px sans-serif;
+    text-anchor: end;
+}
+
+.incoming-tweets {
+    background: #2e3135;
+    padding: 2px 20px 10px;
+}
+
+.heat-container {
+    width: 100%;
+    overflow: auto;
 }

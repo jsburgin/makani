@@ -1,18 +1,4 @@
 <div class="container">
-    <h3>Dashboard</h3>
-    <p>Edit track settings to customize this page.</p>
-    <div class="track-percent-stats">
-        <div class="title-box">
-            <h4>Top Tracks</h4>
-        </div>
-        <div class="col-xs-12 progress">
-            <!-- overridden by tweet percetage values and tracks-->
-            <div percentvalue="road" class="road progress-bar progress-bar-warning" role="progress-bar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 10%">10%</div>
-            <div percentvalue="rain" class="rain progress-bar" role="progress-bar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 25%">25%</div>
-            <div percentvalue="wind" class="wind progress-bar progress-bar-success" role="progress-bar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 50%">50%</div>
-            <div percentvalue="storm" class="storm progress-bar progress-bar-danger" role="progress-bar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 20%">20%</div>
-        </div>
-    </div>
     <div class="update-tracks">
         <div class="title-box">
             <h4>Add Additional Filter</h4>
@@ -22,18 +8,21 @@
             <div class="update-track-button btn btn-default">Add & Refresh Server</div>
         </form>
         <div class="filter-heatmap">
-            <div class="row">
+            <div class="heat-container">
                 <!-- added filters heatmap content -->
             </div>
         </div>
     </div>
     <div class="track-heatmap">
         <div class="title-box">
-            <h4>Track Heatmap</h4>
+            <h4>Primary Tracks</h4>
         </div>
-        <div class="row">
+        <div class="heat-container">
             <!-- heatmap content -->
         </div>
+        <svg class="filter-chart">
+
+        </svg>
     </div>
     <div class="incoming-tweets">
         <div class="title-box">

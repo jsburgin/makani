@@ -5,7 +5,6 @@ $(function () {
     var runTweetFeeder = true;
     var tweetCaches = {};
 
-    // stops incoming tweets from being displayed
     $('.toggle-incoming-button').click(function () {
         if (runTweetFeeder) {
             runTweetFeeder = false;
@@ -14,31 +13,32 @@ $(function () {
         } else {
             runTweetFeeder = true;
             $('.toggle-incoming-button').removeClass('glyphicon-play');
+            $('.income-tweet-container div').remove();
+            for (var i = tweetCaches[incomeSelector].length - 1; i >= 0; i--) {
+                $('.income-tweet-container').append(tweetCaches[incomeSelector][i]);
+            }
             $('.toggle-incoming-button').addClass('glyphicon-pause');
-        };
+        }
     });
 
-    // intializes track list in heatmap
     socket.on('initialData', function (data) {
-        $('.track-heatmap .row').html('');
+        $('.track-heatmap .heat-container').html('');
         for (var key in data.tracks) {
-            $('.track-heatmap .row').append('<div class="col-md-2 heatmap-entry" id="' + key + '">' + key + ': ' + data.tracks[key] + '</div>');
+            $('.track-heatmap .heat-container').append('<div class="col-md-2 heatmap-entry" id="' + key + '">' + key + ': ' + data.tracks[key] + '</div>');
             tweetCaches[key] = [];
-        };
+        }
     });
 
-    // chanages what tweets to display in incoming tweets section
     $('body').on('click', '.heatmap-entry', function (event) {
         incomeSelector = event.currentTarget.id;
         console.log(event.currentTarget.id);
         $('.income-tweet-text').html(event.target.id);
         $('.income-tweet-container div').remove();
-        for (var i = tweetCaches[event.currentTarget.id].length; i > 0; i--) {
+        for (var i = tweetCaches[event.currentTarget.id].length - 1; i >= 0; i--) {
             $('.income-tweet-container').append(tweetCaches[event.currentTarget.id][i]);
         }
     });
 
-    // updates heatmap and displays new tweets in incoming tweets section
     socket.on('data', function (data) {
         var trackContainer = document.getElementById(data.key);
         $('div#' + data.key).html(data.key + ': ' + data.newCount);
@@ -62,19 +62,43 @@ $(function () {
             tweetCaches[data.key].splice(0, 1);
         }
         tweetCaches[data.key].push('<div>@' + data.tweetAuthor + ': ' + data.tweetData + '</div>');
-        for (var i = 0; i < 4; i++) {
-            var text = $('.progress-bar').eq(i).attr('percentvalue');
-            $('.progress-bar').eq(i).html(text + ' ' + data.highKeys[text.toLowerCase()] + '%');
-            $('.progress-bar').eq(i).css('width', data.highKeys[text.toLowerCase()] + '%');
-        }
+        
+        var graphData = [];
+        var filterElement = 0;
+        $('.track-heatmap .heat-container div').each(function (index, element) {
+            var data = $(element).html();
+            var trackString = data.substring(0, data.indexOf(':'));
+            data = data.substring(data.indexOf(':') + 2, data.length);
+            data = Number(data);
+            if (!isNaN(data) && data > filterElement) {
+                graphData.push({track: trackString, value: data});
+            }
+            if (filterElement == 0) {
+                filterElement = data * .08;
+            }
+        });
+        
+        if (graphData.length > 1) {
+            $('.filter-chart').html('');
+            var width = $('.track-heatmap').width(),
+                barHeight = 22;
+
+            var x = d3.scale.linear().domain([0, d3.max(graphData, function(d) {return d.value}) ]).range([0, width]);
+            var chart = d3.select('.filter-chart').attr('width', width).attr('height', barHeight * graphData.length);
+            var bar = chart.selectAll('g').data(graphData).enter().append('g').attr('transform', function (d, i) {
+                return "translate(0," + i * barHeight + ")";
+            });
+
+            bar.append('rect').attr("width", function (d) { return x(d.value) }).attr('height', barHeight - 1);
+            bar.append("text").attr("x", function (d) { return x(d.value) - 3; }).attr("y", barHeight / 2).attr("dy", ".35em").text(function (d) { return d.track + " " + d.value; });
+        } 
     });
 
-    // adds additional filters to track
     $('.update-track-button').click(function () {
         var newTrack = $('.new-track').val();
         socket.emit('updatestream', newTrack);
         $('.new-track').val('');
-        $('.filter-heatmap .row').append('<div class="col-md-2 heatmap-entry" id="' + newTrack + '">' + newTrack + ': ' + '--</div>');
+        $('.filter-heatmap .heat-container').append('<div class="col-md-2 heatmap-entry" id="' + newTrack + '">' + newTrack + ': ' + '0</div>');
         tweetCaches[newTrack] = [];
     });
 });
