@@ -12,12 +12,13 @@
 
 @keyframes yellow-fade {
     0% {
-        background: greenyellow;
-        color: #000;
+        background: #37bb98;
+        fill: #37bb98;
     }
     100% {
-        background: #393939;
+        background: #2e3135;
         color: #fff;
+        fill: #2e3135; 
     }
 }
 
