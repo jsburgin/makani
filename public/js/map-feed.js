@@ -51,6 +51,13 @@ $(function () {
             tweetCaches[data.key].push('<div><a target="_blank" href="' + data.tweetURL + '">@' + data.tweetAuthor + ': ' + data.tweetData + '</a></div>');
         }
 
+        var stateContainer = document.getElementsByClassName(data.key);
+        if (stateContainer.length > 0) {
+            stateContainer[0].classList.remove('highlight-map');
+            stateContainer[0].focus();
+            stateContainer[0].classList.add('highlight-map');
+        }
+
         if (incomeSelector == 'all' && runTweetFeeder) {
             var totalTweets = $('.income-tweet-container div').length;
             if (totalTweets >= 10) {
@@ -64,48 +71,11 @@ $(function () {
             };
             $('.income-tweet-container').prepend('<div><a target="_blank" href="' + data.tweetURL + '">@' + data.tweetAuthor + ': ' + data.tweetData + '</a></div>');
         }
-        
-        function graphData(containerString, chartString) {
-            var graphData = [];
-            var filterElement = 0;
-            $(containerString).each(function (index, element) {
-                var data = $(element).html();
-                var trackString = data.substring(0, data.indexOf(':'));
-                data = data.substring(data.indexOf(':') + 2, data.length);
-                data = Number(data);
-                if (!isNaN(data) && data > filterElement) {
-                    graphData.push({ track: trackString, value: data });
-                }
-                if (filterElement == 0) {
-                    filterElement = data * .14;
-                }
-            });
-            if (graphData.length > 1) {
-                $(chartString).css('display', 'block');
-                $(chartString).html('');
-                var width = $('.track-heatmap').width(),
-                    barHeight = 22;
-                
-                var x = d3.scale.linear().domain([0, d3.max(graphData, function (d) { return d.value })]).range([0, width]);
-                var chart = d3.select(chartString).attr('width', width).attr('height', barHeight * graphData.length);
-                var bar = chart.selectAll('g').data(graphData).enter().append('g').attr('transform', function (d, i) {
-                    return "translate(0," + i * barHeight + ")";
-                });
-                
-                bar.append('rect').attr("width", function (d) { return x(d.value) }).attr('height', barHeight - 1);
-                bar.append("text").attr("x", function (d) { return x(d.value) - 3; }).attr("y", barHeight / 2).attr("dy", ".35em").text(function (d) { return d.track + " " + d.value; });
-            }
-        }
-        
-        graphData('.track-heatmap .heat-container div', '.track-chart');
-        graphData('.filter-heatmap .heat-container div', '.filter-chart');
+
     });
 
-    $('.update-track-button').click(function () {
-        var newTrack = $('.new-track').val();
-        socket.emit('updatestream', newTrack);
-        $('.new-track').val('');
-        $('.filter-heatmap .heat-container').append('<div class="col-md-2 heatmap-entry" id="' + newTrack + '">' + newTrack + ': ' + '0</div>');
-        tweetCaches[newTrack] = [];
+    uStates.draw("#statesvg");
+    $(document).on('click', '.state', function () {
+        alert('clicked');
     });
 });

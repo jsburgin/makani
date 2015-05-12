@@ -1,10 +1,12 @@
 @-webkit-keyframes yellow-fade {
     0% {
         background: #37bb98;
+        fill: #37bb98;
     }
     100% {
         background: #2e3135;
-        color: #fff;  
+        color: #fff;
+        fill: #2e3135;  
     }
 }
 
@@ -24,10 +26,19 @@
     -webkit-animation: yellow-fade 0.5s ease-in 1;
 }
 
+.highlight-map {
+    animation: yellow-fade 1s ease-in 1;
+    -webkit-animation: yellow-fade 1s ease-in 1;
+}
+
 body {
     color: #fff !important;
     background: #22252a;
     padding-bottom: 40px;
+}
+
+::-webkit-scrollbar {
+    display: none;
 }
 
 .track-percent-stats h5 {
@@ -53,7 +64,8 @@ body {
 }
 
 .income-tweet-container div {
-    margin-top: 5px;
+    margin-top: 8px;
+    margin-bottom: 3px;
     overflow-x: hidden !important;
 }
 
@@ -81,6 +93,10 @@ body {
 
 .incoming-tweets .title-box {
     overflow: auto;
+}
+
+.incoming-tweets div a {
+    color: #fff;
 }
 
 .filter-heatmap {
@@ -119,15 +135,16 @@ input.new-track {
     color: #fff;
 }
 
-.filter-chart {
+.data-chart {
     margin-top: 15px;
+    display: none;
 }
 
-.filter-chart rect {
+.data-chart rect {
     fill: #37bb98;
 }
 
-.filter-chart text {
+.data-chart text {
     fill: white;
     font: 10px sans-serif;
     text-anchor: end;
@@ -141,4 +158,24 @@ input.new-track {
 .heat-container {
     width: 100%;
     overflow: auto;
+}
+
+#statesvg {
+    margin: 0 auto;
+}
+
+.state {
+    fill: #2e3135;
+    stroke: #22252a;
+    stroke-width: 2;
+}
+
+.state:hover {
+    cursor: pointer;
+    fill: #404040;
+}
+
+.us-map {
+    width: 960px;
+    margin: 0 auto;
 }

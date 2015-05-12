@@ -8,6 +8,7 @@ var express = require('express'),
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
+var geo = require('./routes/geo');
 
 var app = express();
 var server = app.listen(8080);
@@ -45,7 +46,20 @@ _.each(tracksToWatch, function (v) {
     originalTrackList.push(v);
 });
 
+var stateList = ['alabama', 'alaska', 'arizona', 'arkansas', 'california', 'colorado', 'connecticut', 'deleware', 'florida',
+                'georgia', 'hawaii', 'idaho', 'illinois', 'indiana', 'iowa', 'kansas', 'kentucky', 'louisiana', 'maine', 'maryland',
+                'massachusetts', 'michigan', 'minnesota', 'mississippi', 'missouri', 'montana', 'nebraska', 'nevada', 'new hampshire', 'new jersey',
+                'new mexico', 'new york', 'north carolina', 'north dakota', 'ohio', 'oklahoma', 'oregon', 'pennsylvania', 'rhode island',
+                'south carolina', 'south dakota', 'tennessee', 'texas', 'utah', 'vermont', 'virgina', 'washington', 'west virginia',
+                'wisconsin', 'wyoming'];
+
 var stream = client.stream('statuses/filter', { track: tracksToWatch });
+
+_.each(stateList, function (v) {
+    trackCountPairs.tracks[v] = 0;
+    tracksToWatch.push(v);
+    timesTrackAdded[v] = 100;
+});
 
 stream.on('tweet', function (tweet) {
     if (tweet.text !== undefined) {
@@ -60,6 +74,7 @@ stream.on('tweet', function (tweet) {
                     incomeSelector: v,
                     tweetData: tweet.text,
                     tweetAuthor: tweet.user.name,
+                    tweetURL: 'http://twitter.com/' + tweet.user.id_str + '/status/' + tweet.id_str
                 };
                 io.emit('data', updatedData);
             }
@@ -122,6 +137,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
 app.use('/users', users);
+app.use('/geo', geo);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
