@@ -38,7 +38,7 @@ $(function () {
         }
     });
 
-    socket.on('data', function (data) {
+    socket.on('tweet', function (data) {
         var trackContainer = document.getElementById(data.key);
         if (trackContainer != null) {
             $('div#' + data.key).html(data.key + ': ' + data.newCount);
