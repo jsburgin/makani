@@ -1,9 +1,8 @@
 $(function () {
     var socket = io();
-    var incomeSelector = 'all';
-    $('.income-tweet-text').html(incomeSelector);
+    var incomingSelector = 'all';
+    $('.income-tweet-text').html(incomingSelector);
     var runTweetFeeder = true;
-    var tweetCaches = {};
 
     $('.toggle-incoming-button').click(function () {
         if (runTweetFeeder) {
@@ -14,9 +13,7 @@ $(function () {
             runTweetFeeder = true;
             $('.toggle-incoming-button').removeClass('glyphicon-play');
             $('.income-tweet-container div').remove();
-            for (var i = tweetCaches[incomeSelector].length - 1; i >= 0; i--) {
-                $('.income-tweet-container').append(tweetCaches[incomeSelector][i]);
-            }
+            socket.emit('getcache', incomingSelector);
             $('.toggle-incoming-button').addClass('glyphicon-pause');
         }
     });
@@ -25,39 +22,39 @@ $(function () {
         $('.track-heatmap .heat-container').html('');
         for (var key in data.tracks) {
             $('.track-heatmap .heat-container').append('<div class="col-md-2 heatmap-entry" id="' + key + '">' + key + ': ' + data.tracks[key] + '</div>');
-            tweetCaches[key] = [];
         }
     });
 
     $('body').on('click', '.heatmap-entry', function (event) {
-        incomeSelector = event.currentTarget.id;
+        incomingSelector = event.currentTarget.id;
         $('.income-tweet-text').html(event.target.id);
         $('.income-tweet-container div').remove();
-        for (var i = tweetCaches[event.currentTarget.id].length - 1; i >= 0; i--) {
-            $('.income-tweet-container').append(tweetCaches[event.currentTarget.id][i]);
+        socket.emit('getcache', event.currentTarget.id);
+    });
+    
+    socket.on('receivecache', function (cache) {
+        for (var i = 0; i < cache.length; i++) {
+            var data = cache[i];
+            $('.income-tweet-container').prepend('<div><a target="_blank" href="' + data.tweetURL + '">@' + data.tweetAuthor + ': ' + data.tweetData + '</a></div>');
         }
     });
 
     socket.on('tweet', function (data) {
         var trackContainer = document.getElementById(data.key);
         if (trackContainer != null) {
-            $('div#' + data.key).html(data.key + ': ' + data.newCount);
+            trackContainer.innerHTML = data.key + ': ' + data.newCount;
             trackContainer.classList.remove('highlight');
             trackContainer.focus();
             trackContainer.classList.add('highlight');
-            if (tweetCaches[data.key].length >= 10) {
-                tweetCaches[data.key].splice(0, 1);
-            }
-            tweetCaches[data.key].push('<div><a target="_blank" href="' + data.tweetURL + '">@' + data.tweetAuthor + ': ' + data.tweetData + '</a></div>');
         }
 
-        if (incomeSelector == 'all' && runTweetFeeder) {
+        if (incomingSelector == 'all' && runTweetFeeder) {
             var totalTweets = $('.income-tweet-container div').length;
             if (totalTweets >= 10) {
                 $('.income-tweet-container div:last-child').remove();
             };
             $('.income-tweet-container').prepend('<div><a target="_blank" href="' + data.tweetURL + '">@' + data.tweetAuthor + ': ' + data.tweetData + '</a></div>');
-        } else if (incomeSelector == data.key && runTweetFeeder) {
+        } else if (incomingSelector == data.key && runTweetFeeder) {
             var totalTweets = $('.income-tweet-container div').length;
             if (totalTweets >= 10) {
                 $('.income-tweet-container div:last-child').remove();
@@ -101,11 +98,14 @@ $(function () {
         graphData('.filter-heatmap .heat-container div', '.filter-chart');
     });
 
-    $('.update-track-button').click(function () {
+    $('.add-filter').submit(function () {
         var newTrack = $('.new-track').val();
-        socket.emit('updatestream', newTrack);
         $('.new-track').val('');
-        $('.filter-heatmap .heat-container').append('<div class="col-md-2 heatmap-entry" id="' + newTrack + '">' + newTrack + ': ' + '0</div>');
-        tweetCaches[newTrack] = [];
+        socket.emit('updatestream', newTrack);
+        return false;
+    });
+
+    socket.on('filtercount', function (filterPackage) {
+        $('.filter-heatmap .heat-container').append('<div class="col-md-2 heatmap-entry" id="' + filterPackage.filter + '">' + filterPackage.filter + ': ' + filterPackage.count + '</div>');
     });
 });

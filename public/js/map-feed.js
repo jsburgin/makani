@@ -1,9 +1,8 @@
 $(function () {
     var socket = io();
-    var incomeSelector = 'all';
-    $('.income-tweet-text').html(incomeSelector);
+    var incomingSelector = 'all';
+    $('.income-tweet-text').html(incomingSelector);
     var runTweetFeeder = true;
-    var tweetCaches = {};
 
     $('.toggle-incoming-button').click(function () {
         if (runTweetFeeder) {
@@ -14,9 +13,7 @@ $(function () {
             runTweetFeeder = true;
             $('.toggle-incoming-button').removeClass('glyphicon-play');
             $('.income-tweet-container div').remove();
-            for (var i = tweetCaches[incomeSelector].length - 1; i >= 0; i--) {
-                $('.income-tweet-container').append(tweetCaches[incomeSelector][i]);
-            }
+            socket.emit('getcache', incomingSelector);
             $('.toggle-incoming-button').addClass('glyphicon-pause');
         }
     });
@@ -25,16 +22,29 @@ $(function () {
         $('.track-heatmap .heat-container').html('');
         for (var key in data.tracks) {
             $('.track-heatmap .heat-container').append('<div class="col-md-2 heatmap-entry" id="' + key + '">' + key + ': ' + data.tracks[key] + '</div>');
-            tweetCaches[key] = [];
         }
     });
 
     $('body').on('click', '.heatmap-entry', function (event) {
-        incomeSelector = event.currentTarget.id;
+        incomingSelector = event.currentTarget.id;
         $('.income-tweet-text').html(event.target.id);
         $('.income-tweet-container div').remove();
-        for (var i = tweetCaches[event.currentTarget.id].length - 1; i >= 0; i--) {
-            $('.income-tweet-container').append(tweetCaches[event.currentTarget.id][i]);
+        socket.emit('getcache', event.currentTarget.id);
+    });
+    
+    $('body').on('click', '.state', function (event) {
+        event.preventDefault();
+        var state = event.target.getAttribute('state-name');
+        incomingSelector = state;
+        $('.income-tweet-text').html(state);
+        $('.income-tweet-container div').remove();
+        socket.emit('getcache', state);
+    });
+    
+    socket.on('receivecache', function (cache) {
+        for (var i = 0; i < cache.length; i++) {
+            var data = cache[i];
+            $('.income-tweet-container').prepend('<div><a target="_blank" href="' + data.tweetURL + '">@' + data.tweetAuthor + ': ' + data.tweetData + '</a></div>');
         }
     });
 
@@ -45,10 +55,6 @@ $(function () {
             trackContainer.classList.remove('highlight');
             trackContainer.focus();
             trackContainer.classList.add('highlight');
-            if (tweetCaches[data.key].length >= 10) {
-                tweetCaches[data.key].splice(0, 1);
-            }
-            tweetCaches[data.key].push('<div><a target="_blank" href="' + data.tweetURL + '">@' + data.tweetAuthor + ': ' + data.tweetData + '</a></div>');
         }
 
         var stateContainer = document.getElementsByClassName(data.key);
@@ -58,13 +64,13 @@ $(function () {
             stateContainer[0].classList.add('highlight-map');
         }
 
-        if (incomeSelector == 'all' && runTweetFeeder) {
+        if (incomingSelector == 'all' && runTweetFeeder) {
             var totalTweets = $('.income-tweet-container div').length;
             if (totalTweets >= 10) {
                 $('.income-tweet-container div:last-child').remove();
             };
             $('.income-tweet-container').prepend('<div><a target="_blank" href="' + data.tweetURL + '">@' + data.tweetAuthor + ': ' + data.tweetData + '</a></div>');
-        } else if (incomeSelector == data.key && runTweetFeeder) {
+        } else if (incomingSelector == data.key && runTweetFeeder) {
             var totalTweets = $('.income-tweet-container div').length;
             if (totalTweets >= 10) {
                 $('.income-tweet-container div:last-child').remove();
@@ -78,4 +84,6 @@ $(function () {
     $(document).on('click', '.state', function () {
         alert('clicked');
     });
+
+    
 });

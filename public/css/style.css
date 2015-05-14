@@ -100,6 +100,11 @@ body {
     color: #fff;
 }
 
+
+/*input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i]::-webkit-file-upload-button, button {
+    background-color: #393939 !important;
+} */
+
 .filter-heatmap {
     margin-top: 14px;
 }
@@ -115,7 +120,7 @@ input.new-track {
 }
 
 .update-track-button {
-    background: #393939;
+    background: #393939 !important;
     color: #fff;
     margin-left: 10px;
     border: none;
@@ -132,7 +137,7 @@ input.new-track {
 }
 
 .update-track-button:hover {
-    background: #404040;
+    background: #404040 !important;
     color: #fff;
 }
 
@@ -179,4 +184,9 @@ input.new-track {
 .us-map {
     width: 960px;
     margin: 0 auto;
+}
+
+.new-track.form-control {
+    color: #fff !important;
+
 }

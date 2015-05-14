@@ -8,7 +8,7 @@ var express = require('express'),
 
 var routes = require('./routes/index'),
     users = require('./routes/users'),
-    geo = require('./routes/geo');
+    map = require('./routes/map');
 
 var app = express();
 
@@ -24,7 +24,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
 app.use('/users', users);
-app.use('/geo', geo);
+app.use('/map', map);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

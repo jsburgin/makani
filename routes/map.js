@@ -3,7 +3,7 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
-    res.render('geo/index', { title: 'Twitter Project' });
+    res.render('map/index', { title: 'Twitter Project' });
 });
 
 module.exports = router;
