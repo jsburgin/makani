@@ -3,6 +3,7 @@ $(function () {
     var incomingSelector = 'all';
     $('.income-tweet-text').html(incomingSelector);
     var runTweetFeeder = true;
+    var removeFilter = false;
 
     $('.toggle-incoming-button').click(function () {
         if (runTweetFeeder) {
@@ -21,16 +22,30 @@ $(function () {
     socket.on('initialData', function (data) {
         $('.track-heatmap .heat-container').html('');
         for (var key in data.tracks) {
-            $('.track-heatmap .heat-container').append('<div class="col-md-2 heatmap-entry" id="' + key + '">' + key + ': ' + data.tracks[key] + '</div>');
+            $('.track-heatmap .heat-container').append('<div class="col-md-2 heatmap-entry" id="' + key + '" track-count="' + data.tracks[key] + '"><span class="remove-filter glyphicon glyphicon-remove-circle"></span> ' + key + ': ' + data.tracks[key] + '</div>');
         }
+    });
+    
+    $('body').on('click', '.remove-filter', function () {
+        var toRemove = $(this).parent(),
+            filter = toRemove.attr('id');
+        $(toRemove).remove();
+        socket.emit('removesinglefilter', filter);
+        removeFilter = true;
     });
 
     $('body').on('click', '.heatmap-entry', function (event) {
-        incomingSelector = event.currentTarget.id;
-        $('.income-tweet-text').html(event.target.id);
-        $('.income-tweet-container div').remove();
-        socket.emit('getcache', event.currentTarget.id);
+        // check to see if element has been removed
+        if(!removeFilter) {
+            incomingSelector = event.currentTarget.id;
+            $('.income-tweet-text').html(event.target.id);
+            $('.income-tweet-container div').remove();
+            socket.emit('getcache', event.currentTarget.id);
+        }
+        removeFilter = false;
     });
+    
+    
     
     socket.on('receivecache', function (cache) {
         for (var i = 0; i < cache.length; i++) {
@@ -42,19 +57,36 @@ $(function () {
     socket.on('tweet', function (data) {
         var trackContainer = document.getElementById(data.key);
         if (trackContainer != null) {
-            trackContainer.innerHTML = data.key + ': ' + data.newCount;
+            trackContainer.innerHTML = '<span class="remove-filter glyphicon glyphicon-remove-circle"></span> ' + data.key + ': ' + data.newCount;
+            trackContainer.setAttribute('track-count', data.newCount);
             trackContainer.classList.remove('highlight');
             trackContainer.focus();
             trackContainer.classList.add('highlight');
+            
+            function sortTracks(selectedTrackCount, container, trackContainer) {
+                var trackList = $(container).find('div');
+                for (var i = 0; i < trackList.length; i++) {
+                    if (trackList[i] == trackContainer) {
+                        break;
+                    }
+                    if (selectedTrackCount >= Number($(trackList[i]).attr('track-count'))) {
+                        var temp = $(trackContainer);
+                        console.log(trackContainer);
+                        $(trackContainer).remove();
+                        $(trackList[i]).before(temp);
+                    }
+                }
+            }
+            
+            if ($('.track-heatmap .heat-container').find(trackContainer).length) {
+                sortTracks(Number(trackContainer.getAttribute('track-count')), '.track-heatmap .heat-container', trackContainer);
+            } else {
+                sortTracks(Number(trackContainer.getAttribute('track-count')), '.filter-heatmap .heat-container', trackContainer);
+            }
+            
         }
-
-        if (incomingSelector == 'all' && runTweetFeeder) {
-            var totalTweets = $('.income-tweet-container div').length;
-            if (totalTweets >= 10) {
-                $('.income-tweet-container div:last-child').remove();
-            };
-            $('.income-tweet-container').prepend('<div><a target="_blank" href="' + data.tweetURL + '">@' + data.tweetAuthor + ': ' + data.tweetData + '</a></div>');
-        } else if (incomingSelector == data.key && runTweetFeeder) {
+        
+        if ((incomingSelector == 'all' || incomingSelector == data.key) && runTweetFeeder) {
             var totalTweets = $('.income-tweet-container div').length;
             if (totalTweets >= 10) {
                 $('.income-tweet-container div:last-child').remove();
@@ -63,23 +95,29 @@ $(function () {
         }
         
         function graphData(containerString, chartString) {
-            var graphData = [];
-            var filterElement = 0;
+            var allGraphData = [];
             $(containerString).each(function (index, element) {
                 var data = $(element).html();
-                var trackString = data.substring(0, data.indexOf(':'));
+                var trackString = data.substring(70, data.indexOf(':'));
                 data = data.substring(data.indexOf(':') + 2, data.length);
                 data = Number(data);
-                if (!isNaN(data) && data > filterElement) {
-                    graphData.push({ track: trackString, value: data });
-                }
-                if (filterElement == 0) {
-                    filterElement = data * .14;
+                if (!isNaN(data)) {
+                    allGraphData.push({ track: trackString, value: data });
                 }
             });
+
+            var filterElement = d3.max(allGraphData, function (d) { return d.value }) * .14;
+            var graphData = [];
+            if (!isNaN(filterElement)) {
+                for (var i = 0; i < allGraphData.length; i++) {
+                    if (allGraphData[i].value > filterElement) {
+                        graphData.push(allGraphData[i]);
+                    }
+                }
+            }
+            $(chartString).html('');
             if (graphData.length > 1) {
                 $(chartString).css('display', 'block');
-                $(chartString).html('');
                 var width = $('.track-heatmap').width(),
                     barHeight = 22;
                 
@@ -91,6 +129,8 @@ $(function () {
                 
                 bar.append('rect').attr("width", function (d) { return x(d.value) }).attr('height', barHeight - 1);
                 bar.append("text").attr("x", function (d) { return x(d.value) - 3; }).attr("y", barHeight / 2).attr("dy", ".35em").text(function (d) { return d.track + " " + d.value; });
+            } else {
+                $(chartString).css('display', 'none');
             }
         }
         
@@ -106,6 +146,6 @@ $(function () {
     });
 
     socket.on('filtercount', function (filterPackage) {
-        $('.filter-heatmap .heat-container').append('<div class="col-md-2 heatmap-entry" id="' + filterPackage.filter + '">' + filterPackage.filter + ': ' + filterPackage.count + '</div>');
+        $('.filter-heatmap .heat-container').append('<div class="col-md-2 heatmap-entry" id="' + filterPackage.filter + '" track-count="' + filterPackage.count + '"><span class="remove-filter glyphicon glyphicon-remove-circle"></span> ' + filterPackage.filter + ': ' + filterPackage.count + '</div>');
     });
 });

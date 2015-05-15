@@ -104,18 +104,29 @@ module.exports = function (io) {
             socket.emit('receivecache', tweetCaches[trackValue]);
         });
 
+        function removeFilter(filter) {
+            var localIndex = filters.indexOf(filter);
+            filters.splice(localIndex, 1);
+            if (filterCounts[filter] == 1) {
+                var index = tracksToWatch.indexOf(filter);
+                tracksToWatch.splice(index, 1);
+                delete trackCountPairs.tracks[filter];
+                delete filterCounts[filter];
+            } else {
+                filterCounts[filter]--;
+            }
+        }
+
         // removes any filters added by client
         socket.on('disconnect', function () {
             for (var i = 0; i < filters.length; i++) {
-                if (filterCounts[filters[i]] == 1) {
-                    var index = tracksToWatch.indexOf(filters[i]);
-                    tracksToWatch.splice(index, 1);
-                    delete trackCountPairs.tracks[filters[i]];
-                    delete filterCounts[filters[i]];
-                } else {
-                    filterCounts[filters[i]]--;
-                }
+                removeFilter(filters[i]);
             }
         });
+
+        socket.on('removesinglefilter', function (filter) {
+            removeFilter(filter);
+        });
+
     });
 }

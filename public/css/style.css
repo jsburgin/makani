@@ -190,3 +190,12 @@ input.new-track {
     color: #fff !important;
 
 }
+
+.remove-filter {
+    font-size: 12px;
+    display: inline-block;
+}
+
+.track-heatmap .remove-filter {
+    display: none !important;
+}
