@@ -22,7 +22,7 @@ $(function () {
     socket.on('initialData', function (data) {
         $('.track-heatmap .heat-container').html('');
         for (var key in data.tracks) {
-            $('.track-heatmap .heat-container').append('<div class="col-md-2 heatmap-entry" id="' + key + '" track-count="' + data.tracks[key] + '"><span class="remove-filter glyphicon glyphicon-remove-circle"></span> ' + key + ': ' + data.tracks[key] + '</div>');
+            $('.track-heatmap .heat-container').append('<div class="col-xs-6 col-sm-4 col-md-2 heatmap-entry" id="' + key + '" track-count="' + data.tracks[key] + '"><span class="remove-filter glyphicon glyphicon-remove-circle"></span> ' + key + ': ' + data.tracks[key] + '</div>');
         }
     });
     
@@ -71,7 +71,6 @@ $(function () {
                     }
                     if (selectedTrackCount >= Number($(trackList[i]).attr('track-count'))) {
                         var temp = $(trackContainer);
-                        console.log(trackContainer);
                         $(trackContainer).remove();
                         $(trackList[i]).before(temp);
                     }

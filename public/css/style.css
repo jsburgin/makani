@@ -199,3 +199,13 @@ input.new-track {
 .track-heatmap .remove-filter {
     display: none !important;
 }
+
+.axis text {
+    font: 10px;
+}
+
+.axis path, .axis line {
+    fill: none;
+    stroke: #fff;
+    shape-rendering: crispEdges;
+}
