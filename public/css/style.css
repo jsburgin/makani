@@ -109,7 +109,13 @@ body {
     margin-top: 14px;
 }
 
-input.new-track {
+.login-form {
+    margin-top: 80px;
+    background: #2e3135;
+    padding: 15px;
+}
+
+input.new-track, .login-form input.form-control {
     background: #25282c;
     border: 1px solid #191a1b;
 
@@ -119,7 +125,19 @@ input.new-track {
     -webkit-border-radius: 0px;
 }
 
-.update-track-button {
+.login-form input {
+    margin-bottom: 15px;
+}
+
+
+a.create-account-button {
+    display: block;
+    margin: 15px auto;
+    text-align: center;
+    color: #fff;
+}
+
+.update-track-button, .login-button {
     background: #393939 !important;
     color: #fff;
     margin-left: 10px;
@@ -131,12 +149,18 @@ input.new-track {
     
 }
 
-.update-track-button:focus {
+.login-button {
+    margin: 0 auto;
+    display: block;
+    text-align: center;
+}
+
+.update-track-button:focus, .login-button:focus {
     color: #fff;
     outline: none !important;
 }
 
-.update-track-button:hover {
+.update-track-button:hover, .login-button:hover {
     background: #404040 !important;
     color: #fff;
 }

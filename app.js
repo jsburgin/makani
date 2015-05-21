@@ -4,11 +4,23 @@ var express = require('express'),
     path = require('path'),
     logger = require('morgan'),
     cookieParser = require('cookie-parser'),
-    bodyParser = require('body-parser');
+    bodyParser = require('body-parser'),
+    mongoose = require('mongoose'),
+    passport = require('passport'),
+    expressSession = require('express-session');
 
 var routes = require('./routes/index'),
-    users = require('./routes/users'),
-    map = require('./routes/map');
+    map = require('./routes/map'),
+    login = require('./routes/login'),
+    logout = require('./routes/logout'),
+    config = require('./config');
+
+var passportConfig = require('./auth/passport-config'),
+    restrict = require('./auth/restrict');
+
+passportConfig();
+
+mongoose.connect(config.mongoUri);
 
 var app = express();
 
@@ -22,9 +34,19 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(expressSession({
+    secret: 'dj89gja24kd9akl11jf876',
+    saveUnitiazlized: false,
+    resave: false
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use('/', routes);
-app.use('/users', users);
+app.use('/login', login);
 app.use('/map', map);
+app.use('/logout', logout);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
