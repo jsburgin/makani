@@ -4,6 +4,11 @@ $(function () {
     $('.income-tweet-text').html(incomingSelector);
     var runTweetFeeder = true;
     var removeFilter = false;
+    var userIdent = $('.user-info').html();
+    $('.user-info').remove();
+    
+    
+    socket.emit('connected', userIdent);
 
     $('.toggle-incoming-button').click(function () {
         if (runTweetFeeder) {
@@ -30,6 +35,10 @@ $(function () {
         var toRemove = $(this).parent(),
             filter = toRemove.attr('id');
         $(toRemove).remove();
+        var filterPackage = {
+            track: filterPackage,
+            userID: userIdent 
+        }
         socket.emit('removesinglefilter', filter);
         removeFilter = true;
     });
@@ -69,7 +78,7 @@ $(function () {
                     if (trackList[i] == trackContainer) {
                         break;
                     }
-                    if (selectedTrackCount >= Number($(trackList[i]).attr('track-count'))) {
+                    if (selectedTrackCount > Number($(trackList[i]).attr('track-count'))) {
                         var temp = $(trackContainer);
                         $(trackContainer).remove();
                         $(trackList[i]).before(temp);
@@ -139,8 +148,14 @@ $(function () {
 
     $('.add-filter').submit(function () {
         var newTrack = $('.new-track').val();
+        //console.log(userIdent);
         $('.new-track').val('');
-        socket.emit('updatestream', newTrack);
+        var filterData = {
+            track: newTrack,
+            userID: userIdent
+        };
+        console.log(filterData.userID);
+        socket.emit('addfilter', filterData);
         return false;
     });
 

@@ -1,10 +1,11 @@
 var Twit = require('twit'),
     tweetService = require('../services/tweet-service'),
-    countService = require('../services/count-service');
+    countService = require('../services/count-service'),
+    userService = require('../services/user-service');
 require('dotenv').load();
 
 module.exports = function (io) {
-
+    
     var client = new Twit({
         consumer_key: process.env.CONSUMER_KEY,
         consumer_secret: process.env.CONSUMER_SECRET,
@@ -20,7 +21,7 @@ module.exports = function (io) {
     var tweetCaches = {};
     var filterCounts = {};
     
-    countService.getCountsOfType([0,1], function (err, counts) {
+    countService.getCountsOfType([0, 1, 2], function (err, counts) {
         if (err) {
             console.log(err);
             process.exit(1);
@@ -32,11 +33,11 @@ module.exports = function (io) {
                 if (counts[i].type == 0) {
                     originalTrackList.push(counts[i].track);
                 } else {
-                    filterCounts[counts[i].track] = 1;
+                    filterCounts[counts[i].track] = counts[i].users;
                 }
             }
         }
-        
+
         var stream = client.stream('statuses/filter', { track: originalTrackList });
         
         stream.on('tweet', function (tweet) {
@@ -80,6 +81,7 @@ module.exports = function (io) {
         
         io.on('connection', function (socket) {
             // generate original list of tracks to send to client
+            var userEmail = null;
             var baseTracksToSend = {
                 tracks: {}
             };
@@ -89,27 +91,54 @@ module.exports = function (io) {
             socket.emit('initialData', baseTracksToSend);
             
             var filters = [];
-            socket.on('updatestream', function (newFilter) {
-                newFilter = newFilter.toLowerCase();
-                if (originalTrackList.indexOf(newFilter) == -1 && filters.indexOf(newFilter) == -1) {
+            socket.on('connected', function (userID) {
+                userEmail = userID;
+                userService.getUserFilters(userID, function (err, userFilters) {
+                    for (var i = 0; i < userFilters.length; i++) {
+                        filters.push(userFilters[i].track);
+                        var filterPackage = {
+                            filter: userFilters[i].track,
+                            count: trackCountPairs.tracks[userFilters[i].track]
+                        }
+                        socket.emit('filtercount', filterPackage);
+                    }
+                });
+            });
+            
+            
+            socket.on('addfilter', function (filterData) {
+                filterData.track = filterData.track.toLowerCase();
+                if (originalTrackList.indexOf(filterData.track) == -1 && filters.indexOf(filterData.track) == -1) {
+                    var newFilter = filterData.track;
                     filters.push(newFilter);
-                    var filterPackage = {
-                        filter: newFilter
-                    };
                     if (newFilter in filterCounts) {
                         filterCounts[newFilter]++;
-                        filterPackage['count'] = trackCountPairs.tracks[newFilter];
-                        socket.emit('filtercount', filterPackage);
                     } else {
                         filterCounts[newFilter] = 1;
                         tracksToWatch.push(newFilter);
                         trackCountPairs.tracks[newFilter] = 0;
                         tweetCaches[newFilter] = [];
-                        filterPackage['count'] = 0;
-                        socket.emit('filtercount', filterPackage);
                     }
+                    
+                    countService.addCount({ track: newFilter, type: 2 }, function (err) {
+                        if (err) {
+                            console.log(err);
+                        }
+                    });
+                    
+                    userService.addFilter(filterData, function (err) {
+                        if (err) {
+                            console.log(err);
+                        }
+                        var filterPackage = {
+                            filter: newFilter,
+                            count: trackCountPairs.tracks[newFilter]
+                        }
+                        socket.emit('filtercount', filterPackage);
+                    });
                 }
             });
+            
             
             socket.on('getcache', function (trackValue) {
                 socket.emit('receivecache', tweetCaches[trackValue]);
@@ -128,18 +157,23 @@ module.exports = function (io) {
                 }
             }
             
-            // removes any filters added by client
-            socket.on('disconnect', function () {
-                for (var i = 0; i < filters.length; i++) {
-                    removeFilter(filters[i]);
-                }
-            });
-            
             socket.on('removesinglefilter', function (filter) {
+                // local
                 removeFilter(filter);
+                // database
+                var filterData = {
+                    track: filter,
+                    userID: userEmail 
+                }
+                userService.removeFilter(filterData, function (err) {
+                    if (err) {
+                        console.log(err);
+                    }
+                });
+                console.log(trackCountPairs);
+                console.log(filters);
+                console.log(filterCounts);
             });
-
         });
-
     });
 }

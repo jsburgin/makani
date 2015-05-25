@@ -233,3 +233,12 @@ a.create-account-button {
     stroke: #fff;
     shape-rendering: crispEdges;
 }
+
+.user-box {
+    margin-top: 15px;
+    float: right;
+}
+
+.user-box a {
+    color: #37bb98;
+}
