@@ -1,0 +1,45 @@
+﻿<div class="sim-form">
+    <form class="simulate-form">
+        <div class="col-sm-4">
+            <div class="form-group">
+                <label for="start-date">Start Date:</label>
+                <input type="text" class="form-control start-date"/>
+            </div>
+            <div class="form-group">
+                <label for="start-date">Start Time:</label>
+                <input type="text" class="form-control start-time" />
+            </div>
+            <div class="form-group">
+                <label for="start-date">Stop Date:</label>
+                <input type="text" class="form-control stop-date" placeholder="e.g. 11/5/2015" />
+            </div>
+            <div class="form-group">
+                <label for="start-date">Stop Time:</label>
+                <input type="text" class="form-control stop-time" placeholder="e.g. 07:57 or 15:02"/>
+            </div>
+            <button type="submit" class="btn sim-button">Start</button>
+        </div>
+    </form>
+</div>
+<div class="sim">
+    <div class="time-box">
+        <p></p>
+    </div>
+
+    <div class="track-heatmap">
+        <div class="title-box">
+            <h4>Primary Tracks</h4>
+        </div>
+        <div class="heat-container">
+            <!-- heatmap content -->
+        </div>
+    </div>
+    <div class="incoming-tweets">
+        <div class="title-box">
+            <h4 class="toggle-incoming">Incoming Tweets &middot; <span class="toggle-incoming-button glyphicon glyphicon-pause"></span></h4>
+            <h4 class="showing-tracks">Currently Showing: <span class="income-tweet-text"></span></h4>
+        </div>
+        <div class="income-tweet-container"></div>
+    </div>
+</div>
+<script src="/js/simulate-feed.js"></script>

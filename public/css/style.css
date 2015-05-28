@@ -137,7 +137,7 @@ a.create-account-button {
     color: #fff;
 }
 
-.update-track-button, .login-button {
+.update-track-button, .login-button, .sim-button {
     background: #393939 !important;
     color: #fff;
     margin-left: 10px;
@@ -155,12 +155,12 @@ a.create-account-button {
     text-align: center;
 }
 
-.update-track-button:focus, .login-button:focus {
+.update-track-button:focus, .login-button:focus, .sim-button:focus {
     color: #fff;
     outline: none !important;
 }
 
-.update-track-button:hover, .login-button:hover {
+.update-track-button:hover, .login-button:hover, .sim-button:hover {
     background: #404040 !important;
     color: #fff;
 }
@@ -241,4 +241,13 @@ a.create-account-button {
 
 .user-box a {
     color: #37bb98;
+}
+
+.time-form {
+    display: block;
+    overflow: auto;
+}
+
+.time-form input {
+    margin-bottom: 15px;
 }

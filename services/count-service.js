@@ -13,6 +13,19 @@ exports.updateCount = function (trackValue, next) {
     });
 };
 
+exports.reset = function (next) {
+    Count.find({}, function (err, counts) {
+        if (err) {
+            next(err);
+        }
+        for (var i = 0; i < counts.length; i++) {
+            counts[i].value = 0;
+            counts[i].save();
+        }
+        next(null);
+    });
+}
+
 exports.getCountsOfType = function (typeList, next) {
     var types = [];
     for (var i = 0; i < typeList.length; i++) {
@@ -64,5 +77,25 @@ exports.addCount = function (trackValue, next) {
 };
 
 exports.removeCount = function (trackValue, next) {
-    // null and beautiful
+    Count.findOne({ track: trackValue }, function (err, count) {
+        if (err) {
+            next(err, null);
+        }
+        var faultFix = false;
+        count.users--;
+        if (count.users == 0) {
+            if (count.type == 2) {
+                count.remove();
+            } else {
+                count.users = 1;
+                faultFix = true;
+            }
+        }
+        count.save(function (err) {
+            if (err) {
+                next(err, faultFix);
+            }
+            next(null, faultFix);
+        });
+    });
 };

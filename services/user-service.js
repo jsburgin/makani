@@ -47,7 +47,6 @@ exports.removeFilter = function (filterData, next) {
         user.filters = user.filters.filter(function (v) {
             return v.track != filterData.track;
         });
-        console.log(user.filters);
         user.save(function (err) {
             if (err) {
                 return next(err);

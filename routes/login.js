@@ -6,7 +6,7 @@ var passport = require('passport');
 
 /* GET home page. */
 router.get('/', function (req, res, next) {
-    res.render('login/index', { title: 'Login' });
+    res.render('login/index', { title: 'Login', originalPage: req.path });
 });
 
 router.get('/create', function (req, res, next) {
@@ -30,9 +30,10 @@ router.post('/create', function (req, res, next) {
     });
 });
 
-router.post('/', passport.authenticate('local', {
-    failureRedirect: '/login',
-    successRedirect: '/'
-}));
+router.post('/', passport.authenticate('local', { failureRedirect: '/login' }), function (req, res, next) {
+    var redirectURL = req.session.redirect_to;
+    delete req.session.redirect_to;
+    res.redirect(redirectURL);
+});
 
 module.exports = router;

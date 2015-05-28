@@ -12,14 +12,19 @@
 
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="/js/socket.io.js"></script>
     <script src="http://d3js.org/d3.v3.min.js"></script>
-    {{{ body }}}
 
-    
-    
+    <div class="container">
+        {{#if name}}
+        <div class="user-box">
+            <p>Hi {{name}}, <a href="/logout">Logout</a></p>
+        </div>
+        {{/if}}
+        {{{ body }}}
+    </div>
+
     <script src="/js/bootstrap.min.js"></script>
-    
     
 </body>
 </html>

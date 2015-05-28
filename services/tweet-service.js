@@ -4,10 +4,11 @@ exports.addTweet = function (tweet, next) {
     var newTweet = new Tweet({
         userName: tweet.tweetAuthor,
         text: tweet.tweetData,
-        id: tweet.id,
+        tweetId: tweet.id,
         track: tweet.incomeSelector,
         retweeted: tweet.retweeted,
-        created: { type: Date, default: Date.now }
+        created: new Date(tweet.date),
+        userId: tweet.userId
     });
     
     newTweet.save(function (err) {
@@ -18,3 +19,32 @@ exports.addTweet = function (tweet, next) {
         next(null);
     });
 };
+
+exports.getFirstTweet = function (next) {
+    Tweet.findOne({}).sort({ 'created': 1 }).exec(function (err, tweet) {
+        if (err) {
+            next(err, null);
+        }
+        next(null, tweet.created);
+    })
+};
+
+exports.getTweetsForCache = function (trackValue, next) {
+    Tweet.find({ track: trackValue }).sort({ 'created': -1 }).limit(10).exec(function (err, tweets) {
+        if (err) {
+            next(err, null);
+        }
+        next(null, tweets);
+    });
+}
+
+exports.getTweets = function (dates, next) {
+    var start = new Date(dates.start);
+    var stop = new Date(dates.stop);
+    Tweet.find({ 'created': { "$gte": start, "$lt": stop } }, function (err, tweets) {
+        if (err) {
+            next(err, null);
+        }
+        next(null, tweets);
+    });
+}

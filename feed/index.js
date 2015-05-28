@@ -21,6 +21,21 @@ module.exports = function (io) {
     var tweetCaches = {};
     var filterCounts = {};
     
+    var firstDate = null;
+    
+    // find start date for simulations
+    tweetService.getFirstTweet(function (err, date) {
+        if (err) {
+            console.log(err);
+            process.exit(1);
+        }
+        
+        firstDate = new Date(date);
+        console.log('Simulation ready.');
+        console.log('Starting record: ' + firstDate);
+    });
+    
+    // generate original tracks
     countService.getCountsOfType([0, 1, 2], function (err, counts) {
         if (err) {
             console.log(err);
@@ -37,9 +52,10 @@ module.exports = function (io) {
                 }
             }
         }
-
-        var stream = client.stream('statuses/filter', { track: originalTrackList });
         
+        var stream = client.stream('statuses/filter', { track: originalTrackList });
+        console.log('Feeder ready.')
+
         stream.on('tweet', function (tweet) {
             if (tweet.text !== undefined) {
                 var text = tweet.text.toLowerCase();
@@ -54,10 +70,12 @@ module.exports = function (io) {
                             tweetData: tweet.text,
                             tweetAuthor: tweet.user.name,
                             tweetURL: 'http://twitter.com/' + tweet.user.id_str + '/status/' + tweet.id_str,
-                            id: tweet.id,
-                            retweeted: tweet.retweeted
+                            id: tweet.id_str,
+                            retweeted: tweet.retweeted,
+                            date: tweet.created_at,
+                            userId: tweet.user.id_str
                         };
-                        // store in local cache object
+                        // store in local cache
                         io.emit('tweet', tweetPackage);
                         if (tweetCaches[v].length >= 10) {
                             tweetCaches[v].splice(0, 1);
@@ -89,6 +107,7 @@ module.exports = function (io) {
                 baseTracksToSend.tracks[originalTrackList[i]] = trackCountPairs.tracks[originalTrackList[i]];
             }
             socket.emit('initialData', baseTracksToSend);
+            socket.emit('startsim', firstDate);
             
             var filters = [];
             socket.on('connected', function (userID) {
@@ -104,7 +123,6 @@ module.exports = function (io) {
                     }
                 });
             });
-            
             
             socket.on('addfilter', function (filterData) {
                 filterData.track = filterData.track.toLowerCase();
@@ -139,9 +157,32 @@ module.exports = function (io) {
                 }
             });
             
-            
             socket.on('getcache', function (trackValue) {
-                socket.emit('receivecache', tweetCaches[trackValue]);
+                if (tweetCaches[trackValue].length < 9) {
+                    tweetService.getTweetsForCache(trackValue, function (err, tweets) {
+                        if (err) {
+                            console.log(err);
+                            process.exit(1);
+                        }
+                        tweetCaches[trackValue] = [];
+                        for (var i = tweets.length - 1; i > -1; i--) {
+                            var tweetPackage = {
+                                key: tweets[i].track,
+                                newCount: trackCountPairs.tracks[tweets[i].track],
+                                incomeSelector: tweets[i].track,
+                                tweetData: tweets[i].text,
+                                tweetAuthor: tweets[i].userName,
+                                tweetURL: 'http://twitter.com/' + tweets[i].userId + '/status/' + tweets[i].tweetId,
+                                id: tweets[i].tweetId,
+                                retweeted: tweets[i].retweeted
+                            }
+                            tweetCaches[trackValue].push(tweetPackage);
+                        }
+                        socket.emit('receivecache', tweetCaches[trackValue]);
+                    });
+                } else {
+                    socket.emit('receivecache', tweetCaches[trackValue]);
+                }
             });
             
             function removeFilter(filter) {
@@ -170,9 +211,66 @@ module.exports = function (io) {
                         console.log(err);
                     }
                 });
-                console.log(trackCountPairs);
-                console.log(filters);
-                console.log(filterCounts);
+                countService.removeCount(filter, function (err, filterFault) {
+                    if (err) {
+                        console.log(err);
+                        process.exit(1);
+                    }
+                    
+                    if (filterFault) {
+                        console.log('Below zero for non-user created track!');
+                    }
+                });
+            });
+            
+            
+            // run simulation
+
+            socket.on('runningSim', function (dates) {
+                var trackCounts = {
+                    tracks: {}
+                }
+                for (var i = 0; i < originalTrackList.length; i++) {
+                    trackCounts.tracks[originalTrackList[i]] = 0;
+                }
+                socket.emit('simInit', trackCounts);
+
+                tweetService.getTweets(dates, function (err, tweetsToEmit) {
+                    if (err) {
+                        console.log(err);
+                        process.exit(1);
+                    }
+                    
+                    console.log(tweetsToEmit.length);
+                    console.log(tweetsToEmit[0].created);
+                    console.log(tweetsToEmit[tweetsToEmit.length - 1].created);  
+
+                    var subTime = tweetsToEmit[0].created;
+                    var timeDelay = 0;
+
+                    for (var i = 0; i < 10000; i++) {
+                        timeDelay = tweetsToEmit[i].created - subTime + timeDelay;
+                        trackCounts.tracks[tweetsToEmit[i].track]++;
+                        !function (tweet, time, count) {
+                            setTimeout(function () {
+                                var tweetPackage = {
+                                    key: tweet.track,
+                                    newCount: count,
+                                    incomeSelector: tweet.track,
+                                    tweetData: tweet.text,
+                                    tweetAuthor: tweet.userName,
+                                    id: tweet.id,
+                                    tweetURL: 'http://twitter.com/' + tweet.userName + '/status/' + tweet.id,
+                                    created: tweet.created
+                                }
+                                
+                                socket.emit('simTweet', tweetPackage);
+                            }, time);
+                        }(tweetsToEmit[i], Math.abs(timeDelay), trackCounts.tracks[tweetsToEmit[i].track]);
+                        subTime = tweetsToEmit[i].created;
+                    }
+                });
+
             });
         });
     });

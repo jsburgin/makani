@@ -12,6 +12,7 @@ var express = require('express'),
 var routes = require('./routes/index'),
     map = require('./routes/map'),
     login = require('./routes/login'),
+    sim = require('./routes/sim'),
     logout = require('./routes/logout'),
     config = require('./config');
 
@@ -28,7 +29,7 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 
-app.use(logger('dev'));
+//app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -46,6 +47,7 @@ app.use(passport.session());
 app.use('/', routes);
 app.use('/login', login);
 app.use('/map', map);
+app.use('/sim', sim);
 app.use('/logout', logout);
 
 // catch 404 and forward to error handler

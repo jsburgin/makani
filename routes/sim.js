@@ -1,16 +1,16 @@
-var express = require('express');
+﻿var express = require('express');
 var router = express.Router();
 var restrict = require('../auth/restrict');
 
 /* GET home page. */
 router.get('/', restrict, function (req, res, next) {
     var vm = {
-        title: 'Primary Feed',
+        title: 'Simulate Feed',
         email: req.user.email,
         id: req.user.id,
         name: req.user.name
     }
-    res.render('index', vm);
+    res.render('sim/index', vm);
 });
 
 module.exports = router;
