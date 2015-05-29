@@ -7,7 +7,7 @@ exports.addTweet = function (tweet, next) {
         tweetId: tweet.id,
         track: tweet.incomeSelector,
         retweeted: tweet.retweeted,
-        created: new Date(tweet.date),
+        created: Date.now(),
         userId: tweet.userId
     });
     
@@ -15,7 +15,6 @@ exports.addTweet = function (tweet, next) {
         if (err) {
             return next(err);
         }
-        
         next(null);
     });
 };
@@ -36,15 +35,17 @@ exports.getTweetsForCache = function (trackValue, next) {
         }
         next(null, tweets);
     });
-}
+};
 
-exports.getTweets = function (dates, next) {
-    var start = new Date(dates.start);
-    var stop = new Date(dates.stop);
+exports.getTweets = function (start, stop, next) {
+    console.log();
+    console.log('Start:' + start);
+    console.log('Stop:' + stop);
+    console.log();
     Tweet.find({ 'created': { "$gte": start, "$lt": stop } }, function (err, tweets) {
         if (err) {
-            next(err, null);
+            process.exit(1);
         }
-        next(null, tweets);
+        next(tweets);
     });
-}
+};

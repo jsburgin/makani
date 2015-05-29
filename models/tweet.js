@@ -8,7 +8,7 @@ var tweetSchema = new Schema({
     tweetId: { type: Number },
     retweeted: { type: Boolean },
     track: { type: String },
-    created: { type: Date, index: true },
+    created: { type: Date, default: Date.now, index: true },
     userId: { type: Number }
 });
 
