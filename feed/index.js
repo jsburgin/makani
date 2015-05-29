@@ -224,6 +224,8 @@ module.exports = function (io) {
                 
                 tweetService.getTweets(startTime, new Date(startTime.getTime() + 60000), function (initialData) {
                     
+                    var runWithNoData = false;
+
                     function sendData(data, next, cbObj) {
                         var tweetCount = 0,
                             lastTweetTime = 0;
@@ -241,21 +243,26 @@ module.exports = function (io) {
                             lastTweetTime = data[tweetCount].created;
                             tweetCount++;
                             if (tweetCount < data.length) {
-                                setTimeout(emitTweet, Math.abs(data[tweetCount].created - lastTweetTime), tweetCount)
+                                setTimeout(emitTweet, Math.abs(data[tweetCount].created - lastTweetTime), tweetCount);
                             } else {
-                                console.log('calling next');
                                 next(cbObj);
                             }
                         }
-                        emitTweet(tweetCount);
+                        if (data.length > 0) {
+                            emitTweet(tweetCount);
+                        } else {
+                            next(cbObj);
+                        }
                     }
                     
                     function callLoop(currentMinute, twitterData) {
+                        
                         function finishedSendingToClient(obj) {
                             if (currentMinute < endTime) {
-                                if (obj.data.length == 0) {
+                                if (obj.data.length == 0 && !runWithNoData) {
                                     setTimeout(finishedSendingToClient, 0, obj);
                                 } else {
+                                    runWithNoData = false;
                                     setTimeout(callLoop, 0, new Date(currentMinute.getTime() + 60000), obj.data);
                                 }
                             }
@@ -264,11 +271,12 @@ module.exports = function (io) {
                             data: []
                         };
                         tweetService.getTweets(currentMinute, new Date(currentMinute.getTime() + 60000), function (tweets) {
-                            console.log('done');
+                            if (tweets.length == 0) {
+                                runWithNoData = true;
+                            }
                             callBackObject.data = tweets;
                         });
-                        sendData(twitterData, finishedSendingToClient, callBackObject);
-                        //setTimeout(sendData, 0, twitterData, finishedSendingToClient, callBackObject);
+                        setTimeout(sendData, 0, twitterData, finishedSendingToClient, callBackObject);
                     }
                     
                     callLoop(new Date(startTime.getTime() + 60000), initialData);
