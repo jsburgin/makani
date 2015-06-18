@@ -278,7 +278,6 @@ module.exports = function (io) {
                         });
                         setTimeout(sendData, 0, twitterData, finishedSendingToClient, callBackObject);
                     }
-                    
                     callLoop(new Date(startTime.getTime() + 60000), initialData);
                 });
             });
