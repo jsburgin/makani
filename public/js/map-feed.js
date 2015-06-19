@@ -58,6 +58,7 @@ $(function () {
         }
 
         var stateContainer = document.getElementsByClassName(data.key);
+        console.log(data.key);
         if (stateContainer.length > 0) {
             stateContainer[0].classList.remove('highlight-map');
             stateContainer[0].focus();

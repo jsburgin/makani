@@ -22,10 +22,14 @@ exports.addTweet = function (tweet, next) {
 exports.getFirstTweet = function (next) {
     Tweet.findOne({}).sort({ 'created': 1 }).exec(function (err, tweet) {
         if (err) {
-            next(err, null);
+            return next(err, null);
         }
-        next(null, tweet.created);
-    })
+        if (tweet != null) {
+            next(null, tweet.created);
+        } else {
+            next(null, null);
+        }
+    });
 };
 
 exports.getTweetsForCache = function (trackValue, next) {
@@ -44,8 +48,17 @@ exports.getTweets = function (start, stop, next) {
     console.log();
     Tweet.find({ 'created': { "$gte": start, "$lt": stop } }, function (err, tweets) {
         if (err) {
-            process.exit(1);
+            console.log(err);
         }
         next(tweets);
     });
 };
+
+exports.removeAllTweets = function (next) {
+    Tweet.find({}).remove().exec(function (err) {
+        if (err) {
+            return next(err);
+        }
+        next(null);
+    });
+}

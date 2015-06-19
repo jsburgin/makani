@@ -6,7 +6,7 @@ exports.updateCount = function (trackValue, next) {
         count.value = newValue;
         count.save(function (err) {
             if (err) {
-                next(err);
+                return next(err);
             }
             next(null);
         });
@@ -16,7 +16,7 @@ exports.updateCount = function (trackValue, next) {
 exports.reset = function (next) {
     Count.find({}, function (err, counts) {
         if (err) {
-            next(err);
+            return next(err);
         }
         for (var i = 0; i < counts.length; i++) {
             counts[i].value = 0;
@@ -33,7 +33,7 @@ exports.getCountsOfType = function (typeList, next) {
     }
     Count.find({ $or: types }).sort({ value: 'desc' }).exec(function (err, counts) {
         if (err) {
-            next(err, null);
+            return next(err, null);
         }
         next(null, counts);
     });
@@ -42,7 +42,7 @@ exports.getCountsOfType = function (typeList, next) {
 exports.getCount = function (trackValue, next) {
     Count.findOne({ track: trackValue }, function (err, count) {
         if (err) {
-            next(err, null, null);
+            return next(err, null, null);
         }
         next(null, trackValue, count.value);
     });
@@ -60,7 +60,7 @@ exports.addCount = function (trackValue, next) {
             
             newCount.save(function (err) {
                 if (err) {
-                    next(err);
+                    return next(err);
                 }
                 next(null);
             });
@@ -68,7 +68,7 @@ exports.addCount = function (trackValue, next) {
             count.users++;
             count.save(function (err) {
                 if (err) {
-                    next(err);
+                    return next(err);
                 }
                 next(null);
             })
@@ -79,7 +79,7 @@ exports.addCount = function (trackValue, next) {
 exports.removeCount = function (trackValue, next) {
     Count.findOne({ track: trackValue }, function (err, count) {
         if (err) {
-            next(err, null);
+            return next(err, null);
         }
         var faultFix = false;
         count.users--;
@@ -93,7 +93,7 @@ exports.removeCount = function (trackValue, next) {
         }
         count.save(function (err) {
             if (err) {
-                next(err, faultFix);
+                return next(err, faultFix);
             }
             next(null, faultFix);
         });

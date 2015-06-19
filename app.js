@@ -14,6 +14,7 @@ var routes = require('./routes/index'),
     login = require('./routes/login'),
     sim = require('./routes/sim'),
     logout = require('./routes/logout'),
+    create = require('./routes/create'),
     config = require('./config');
 
 var passportConfig = require('./auth/passport-config'),
@@ -46,9 +47,10 @@ app.use(passport.session());
 
 app.use('/', routes);
 app.use('/login', login);
+app.use('/logout', logout);
+app.use('/create', create);
 app.use('/map', map);
 app.use('/sim', sim);
-app.use('/logout', logout);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

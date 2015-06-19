@@ -5,3 +5,6 @@ twitter-express.njsproj
 twitter-express.v12.suo
 npm-debug.log
 .env
+makani.sublime-project
+makani.sublime-workspace
+npm-debug

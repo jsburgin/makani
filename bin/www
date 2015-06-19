@@ -28,7 +28,7 @@ var server = http.createServer(app);
 server.listen(port);
 
 var io = require('socket.io').listen(server);
-require('../feed/index')(io);
+require('../feed/stream')(io);
 
 server.on('error', onError);
 server.on('listening', onListening);

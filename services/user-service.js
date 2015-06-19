@@ -1,27 +1,37 @@
 ﻿var User = require('../models/user').User;
 var bcrypt = require('bcrypt');
 var mongoose = require('mongoose');
+var countService = require('../services/count-service');
 
 exports.addUser = function (user, next) {
-    bcrypt.hash(user.password, 10, function (err, hash) {
+    User.findOne({ email: user.email.toLowerCase() }, function (err, dbUser) {
         if (err) {
+            next(err);
+        } else if (dbUser != null) {
+            var err = "A user with that email address already exists.";
             return next(err);
         }
-        
-        var newUser = new User({
-            name: user.name,
-            email: user.email.toLowerCase(),
-            password: hash
-        });
-        
-        newUser.save(function (err) {
+
+        bcrypt.hash(user.password, 10, function (err, hash) {
             if (err) {
                 return next(err);
             }
-            next(null);
+
+            var newUser = new User({
+                name: user.name,
+                email: user.email.toLowerCase(),
+                password: hash
+            });
+
+            newUser.save(function (err) {
+                if (err) {
+                    next(err);
+                }
+
+                return next(null);
+            });
         });
     });
-  
 };
 
 exports.addFilter = function (filterData, next) {
@@ -59,7 +69,7 @@ exports.removeFilter = function (filterData, next) {
 exports.getUserFilters = function (userID, next) {
     User.findOne({ email: userID }, function (err, user) {
         if (err) {
-            next(err, null);
+            return next(err, null);
         }
         next(null, user.filters);
     });
@@ -70,3 +80,33 @@ exports.findUser = function (email, next) {
         next(err, user);
     });
 };
+
+exports.removeUser = function(email, next) {
+    User.findOne({ email: email.toLowerCase() }, function (err, user) {
+        if (user == null) {
+            var err = 'No user with that email address exists.\n';
+            return next(err);
+        }
+
+        // decrement any user filters before proceeding
+        function decrementFilter (filter) {
+            countService.removeCount(filter, function(err) {
+                console.log(filter);
+                if (err) {
+                    return next(err);
+                }
+            });
+        }
+
+        for (var i = 0; i < user.filters.length; i++) {
+            decrementFilter(user.filters[i]);
+        }
+
+        user.remove(function(err) {
+            if (err) {
+                return next(err);
+            }
+            next(null);
+        });
+    });
+}

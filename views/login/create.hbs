@@ -1,6 +1,6 @@
 ﻿<div class="container">
     <div class="col-md-4 col-lg-offset-4">
-        <form class="login-form" action="/login/create" method="post">
+        <form class="login-form" action="/create" method="post">
             <div class="form=group">
                 <label for="name">Name:</label>
                 <input type="text" name="name" class="form-control"/>   
@@ -17,4 +17,7 @@
         </form>
         <a class="create-account-button" href="/login">Already have an account? Log In</a>
     </div>
+    {{#if error}}
+        <p style="color:red;">{{error}}</p>
+    {{/if}}    
 </div>

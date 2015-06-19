@@ -1,10 +1,14 @@
 var Twit = require('twit'),
     tweetService = require('../services/tweet-service'),
     countService = require('../services/count-service'),
-    userService = require('../services/user-service');
+    userService = require('../services/user-service'),
+    devUtility = require('../feed/dev-utility'),
+    util = require('util');
 require('dotenv').load();
 
 module.exports = function (io) {
+
+    process.stdin.setEncoding('utf8');
     
     var client = new Twit({
         consumer_key: process.env.CONSUMER_KEY,
@@ -22,6 +26,15 @@ module.exports = function (io) {
     var filterCounts = {};
     
     var firstDate = null;
+
+    var simReady = false;
+    var feedReady = false;
+
+    function checkService() {
+        if (simReady && feedReady) {
+            console.log('');
+        }
+    }
     
     // find start date for simulations
     tweetService.getFirstTweet(function (err, date) {
@@ -30,9 +43,16 @@ module.exports = function (io) {
             process.exit(1);
         }
         
-        firstDate = new Date(date);
-        console.log('Simulation ready.');
-        console.log('Starting record: ' + firstDate);
+        if (date == null) {
+            console.log('No records in database for simulation.');
+        } else {
+            firstDate = new Date(date);
+            console.log('Simulation ready.');
+            console.log('Starting record: ' + firstDate);
+        }
+
+        simReady = true;
+        checkService();
     });
     
     // generate original tracks
@@ -54,7 +74,9 @@ module.exports = function (io) {
         }
         
         var stream = client.stream('statuses/filter', { track: originalTrackList });
-        console.log('Feeder ready.')
+        console.log('Feeder ready.');
+        feedReady = true;
+        checkService();
 
         stream.on('tweet', function (tweet) {
             if (tweet.text !== undefined) {
@@ -78,9 +100,9 @@ module.exports = function (io) {
                             userId: tweet.user.id_str
                         };
                         // store in local cache
-                        if (!alreadySaved) {
-                            io.emit('tweet', tweetPackage);
-                        }
+                        
+                        io.emit('tweet', tweetPackage);
+                        
                         if (tweetCaches[v].length >= 10) {
                             tweetCaches[v].splice(0, 1);
                         }
@@ -103,6 +125,8 @@ module.exports = function (io) {
                 }
             }
         });
+
+        devUtility(stream);
         
         io.on('connection', function (socket) {
             // generate original list of tracks to send to client
@@ -279,8 +303,9 @@ module.exports = function (io) {
                         setTimeout(sendData, 0, twitterData, finishedSendingToClient, callBackObject);
                     }
                     callLoop(new Date(startTime.getTime() + 60000), initialData);
-                });
-            });
+                }); // tweetService.getTweets
+            }); // running sim
+
         });
-    });
+    }); // generated tracks
 }
