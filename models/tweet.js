@@ -5,11 +5,11 @@ var tweetService = require('../services/tweet-service.js');
 var tweetSchema = new Schema({
     userName: { type: String },
     text: { type: String },
-    tweetId: { type: Number },
+    tweetId: { type: String },
     retweeted: { type: Boolean },
     track: { type: String },
     created: { type: Date, default: Date.now, index: true },
-    userId: { type: Number }
+    userId: { type: String }
 });
 
 var Tweet = mongoose.model('Tweet', tweetSchema);

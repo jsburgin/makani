@@ -19,11 +19,11 @@ $(function () {
         var stopTime = $('.stop-time').val();
         stopDate.setHours(stopTime.substring(0, 2), stopTime.substring(3, 5));
         
-        var startPackage = {
+        var dates = {
             start: startDate,
             stop: stopDate
         }
-        socket.emit('runningSim', startPackage);
+        socket.emit('runSimulation', dates);
         return false;
     });
 
@@ -72,28 +72,39 @@ $(function () {
     socket.on('simTweet', function (data) {
         var trackContainer = document.getElementById(data.key);
         if (trackContainer != null) {
-            $('div#' + data.key).html(data.key + ': ' + data.newCount);
+            trackContainer.innerHTML = '<span class="remove-filter glyphicon glyphicon-remove-circle"></span> ' + data.key + ': ' + data.newCount;
+            trackContainer.setAttribute('track-count', data.newCount);
             trackContainer.classList.remove('highlight');
             trackContainer.focus();
             trackContainer.classList.add('highlight');
         }
 
+        function sortTracks(selectedTrackCount, container, trackContainer) {
+            var trackList = $(container).find('div');
+            for (var i = 0; i < trackList.length; i++) {
+                if (trackList[i] == trackContainer) {
+                    break;
+                }
+                if (selectedTrackCount > Number($(trackList[i]).attr('track-count'))) {
+                    var temp = $(trackContainer);
+                    $(trackContainer).remove();
+                    $(trackList[i]).before(temp);
+                }
+            }
+        }
+
+        sortTracks(Number(trackContainer.getAttribute('track-count')), '.track-heatmap .heat-container', trackContainer);
+
         var date = new Date(data.created);
         $('.time-box p').html(date);
 
 
-        if (incomingSelector == 'all' && runTweetFeeder) {
+        if ((incomingSelector == 'all' || incomingSelector == data.key) && runTweetFeeder) {
             var totalTweets = $('.income-tweet-container div').length;
             if (totalTweets >= 10) {
                 $('.income-tweet-container div:last-child').remove();
             };
-            $('.income-tweet-container').prepend('<div><a target="_blank" href="' + data.tweetURL + '">@' + data.tweetAuthor + ': ' + data.tweetData + '</a></div>');
-        } else if (incomingSelector == data.key && runTweetFeeder) {
-            var totalTweets = $('.income-tweet-container div').length;
-            if (totalTweets >= 10) {
-                $('.income-tweet-container div:last-child').remove();
-            };
-            $('.income-tweet-container').prepend('<div><a target="_blank" href="' + data.tweetURL + '">@' + data.tweetAuthor + ': ' + data.tweetData + '</a></div>');
+            $('.income-tweet-container').prepend('<div><a target="_blank" href="' + data.url + '">@' + data.author + ': ' + data.text + '</a></div>');
         }
 
     });

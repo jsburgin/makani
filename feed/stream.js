@@ -2,7 +2,8 @@ var Twit = require('twit'),
     tweetService = require('../services/tweet-service'),
     countService = require('../services/count-service'),
     userService = require('../services/user-service'),
-    devUtility = require('../feed/dev-utility'),
+    devUtility = require('../feed/console'),
+    simulator = require('../feed/simulate'),
     util = require('util');
 require('dotenv').load();
 
@@ -17,18 +18,18 @@ module.exports = function (io) {
         access_token_secret: process.env.ACCESS_TOKEN_SECRET
     });
     
-    var tracksToWatch = [];
-    var originalTrackList = [];
-    var trackCountPairs = {
-        tracks: {}
-    };
-    var tweetCaches = {};
-    var filterCounts = {};
+    var tracksToWatch = [],
+        originalTrackList = [],
+        tweetCaches = {},
+        filterCounts = {},
+        trackCountPairs = {
+            tracks: {}
+        };
     
-    var firstDate = null;
-
-    var simReady = false;
-    var feedReady = false;
+    
+    var firstDate = null,
+        simReady = false,
+        feedReady = false;
 
     function checkService() {
         if (simReady && feedReady) {
@@ -90,10 +91,9 @@ module.exports = function (io) {
                         var tweetPackage = {
                             key: v,
                             newCount: trackCountPairs.tracks[v],
-                            incomeSelector: v,
-                            tweetData: tweet.text,
-                            tweetAuthor: tweet.user.name,
-                            tweetURL: 'http://twitter.com/' + tweet.user.id_str + '/status/' + tweet.id_str,
+                            text: tweet.text,
+                            author: tweet.user.name,
+                            url: 'http://twitter.com/' + tweet.user.id_str + '/status/' + tweet.id_str,
                             id: tweet.id_str,
                             retweeted: tweet.retweeted,
                             date: tweet.created_at,
@@ -229,83 +229,11 @@ module.exports = function (io) {
                     }
                 });
             });
-            
-            
-            // run simulation
 
-            socket.on('runningSim', function (dates) {
-                var startTime = new Date(dates.start),
-                    endTime = new Date(dates.stop);
-                
-                var trackCounts = {
-                    tracks: {}
-                }
-                for (var i = 0; i < originalTrackList.length; i++) {
-                    trackCounts.tracks[originalTrackList[i]] = 0;
-                }
-                
-                socket.emit('simInit', trackCounts);
-                
-                tweetService.getTweets(startTime, new Date(startTime.getTime() + 60000), function (initialData) {
-                    
-                    var runWithNoData = false;
-
-                    function sendData(data, next, cbObj) {
-                        var tweetCount = 0,
-                            lastTweetTime = 0;
-                        function emitTweet(tweetCount) {
-                            trackCounts.tracks[data[tweetCount].track]++;
-                            var tweetPackage = {
-                                key: data[tweetCount].track,
-                                newCount: trackCounts.tracks[data[tweetCount].track],
-                                incomeSelector: data[tweetCount].track,
-                                tweetData: data[tweetCount].text,
-                                tweetAuthor: data[tweetCount].userName,
-                                created: data[tweetCount].created
-                            }
-                            socket.emit('simTweet', tweetPackage);
-                            lastTweetTime = data[tweetCount].created;
-                            tweetCount++;
-                            if (tweetCount < data.length) {
-                                setTimeout(emitTweet, Math.abs(data[tweetCount].created - lastTweetTime), tweetCount);
-                            } else {
-                                next(cbObj);
-                            }
-                        }
-                        if (data.length > 0) {
-                            emitTweet(tweetCount);
-                        } else {
-                            next(cbObj);
-                        }
-                    }
-                    
-                    function callLoop(currentMinute, twitterData) {
-                        
-                        function finishedSendingToClient(obj) {
-                            if (currentMinute < endTime) {
-                                if (obj.data.length == 0 && !runWithNoData) {
-                                    setTimeout(finishedSendingToClient, 0, obj);
-                                } else {
-                                    runWithNoData = false;
-                                    setTimeout(callLoop, 0, new Date(currentMinute.getTime() + 60000), obj.data);
-                                }
-                            }
-                        }
-                        var callBackObject = {
-                            data: []
-                        };
-                        tweetService.getTweets(currentMinute, new Date(currentMinute.getTime() + 60000), function (tweets) {
-                            if (tweets.length == 0) {
-                                runWithNoData = true;
-                            }
-                            callBackObject.data = tweets;
-                        });
-                        setTimeout(sendData, 0, twitterData, finishedSendingToClient, callBackObject);
-                    }
-                    callLoop(new Date(startTime.getTime() + 60000), initialData);
-                }); // tweetService.getTweets
-            }); // running sim
+            socket.on('runSimulation', function (dates) {
+                simulator(socket, dates, originalTrackList);
+            });
 
         });
-    }); // generated tracks
+    });
 }

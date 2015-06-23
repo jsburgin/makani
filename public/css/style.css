@@ -22,6 +22,21 @@
     }
 }
 
+path {
+    fill: #2e3135;
+    stroke: #fff;
+    stroke-width: .6;
+}
+
+path:hover {
+    fill: #37bb98;
+    cursor: pointer;
+}
+
+.county-heatmap {
+    border: 2px solid #2e3135;
+}
+
 .highlight {
     animation: yellow-fade 0.5s ease-in 1;
     -webkit-animation: yellow-fade 0.5s ease-in 1;

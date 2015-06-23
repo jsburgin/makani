@@ -54,12 +54,10 @@ $(function () {
         removeFilter = false;
     });
     
-    
-    
     socket.on('receivecache', function (cache) {
         for (var i = 0; i < cache.length; i++) {
             var data = cache[i];
-            $('.income-tweet-container').prepend('<div><a target="_blank" href="' + data.tweetURL + '">@' + data.tweetAuthor + ': ' + data.tweetData + '</a></div>');
+            $('.income-tweet-container').prepend('<div><a target="_blank" href="' + data.url + '">@' + data.author + ': ' + data.text + '</a></div>');
         }
     });
 
@@ -99,7 +97,7 @@ $(function () {
             if (totalTweets >= 10) {
                 $('.income-tweet-container div:last-child').remove();
             };
-            $('.income-tweet-container').prepend('<div><a target="_blank" href="' + data.tweetURL + '">@' + data.tweetAuthor + ': ' + data.tweetData + '</a></div>');
+            $('.income-tweet-container').prepend('<div><a target="_blank" href="' + data.url + '">@' + data.author + ': ' + data.text + '</a></div>');
         }
         
         function graphData(containerString, chartString) {

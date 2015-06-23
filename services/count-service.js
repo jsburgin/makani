@@ -24,7 +24,7 @@ exports.reset = function (next) {
         }
         next(null);
     });
-}
+};
 
 exports.getCountsOfType = function (typeList, next) {
     var types = [];
@@ -46,7 +46,7 @@ exports.getCount = function (trackValue, next) {
         }
         next(null, trackValue, count.value);
     });
-}
+};
 
 exports.addCount = function (trackValue, next) { 
     Count.findOne({ track: trackValue.track }, function (err, count) {

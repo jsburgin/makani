@@ -34,6 +34,36 @@ exports.addUser = function (user, next) {
     });
 };
 
+exports.removeUser = function(email, next) {
+    User.findOne({ email: email.toLowerCase() }, function (err, user) {
+        if (user == null) {
+            var err = 'No user with that email address exists.\n';
+            return next(err);
+        }
+
+        // decrement any user filters before proceeding
+        function decrementFilter (filter) {
+            countService.removeCount(filter, function(err) {
+                console.log(filter);
+                if (err) {
+                    return next(err);
+                }
+            });
+        }
+
+        for (var i = 0; i < user.filters.length; i++) {
+            decrementFilter(user.filters[i]);
+        }
+
+        user.remove(function(err) {
+            if (err) {
+                return next(err);
+            }
+            next(null);
+        });
+    });
+};
+
 exports.addFilter = function (filterData, next) {
     User.findOne({ email: filterData.userID }, function (err, user) {
         if (err) {
@@ -64,7 +94,7 @@ exports.removeFilter = function (filterData, next) {
             next(null);
         });
     });
-}
+};
 
 exports.getUserFilters = function (userID, next) {
     User.findOne({ email: userID }, function (err, user) {
@@ -80,33 +110,3 @@ exports.findUser = function (email, next) {
         next(err, user);
     });
 };
-
-exports.removeUser = function(email, next) {
-    User.findOne({ email: email.toLowerCase() }, function (err, user) {
-        if (user == null) {
-            var err = 'No user with that email address exists.\n';
-            return next(err);
-        }
-
-        // decrement any user filters before proceeding
-        function decrementFilter (filter) {
-            countService.removeCount(filter, function(err) {
-                console.log(filter);
-                if (err) {
-                    return next(err);
-                }
-            });
-        }
-
-        for (var i = 0; i < user.filters.length; i++) {
-            decrementFilter(user.filters[i]);
-        }
-
-        user.remove(function(err) {
-            if (err) {
-                return next(err);
-            }
-            next(null);
-        });
-    });
-}

@@ -2,10 +2,10 @@
 
 exports.addTweet = function (tweet, next) {
     var newTweet = new Tweet({
-        userName: tweet.tweetAuthor,
-        text: tweet.tweetData,
+        userName: tweet.author,
+        text: tweet.text,
         tweetId: tweet.id,
-        track: tweet.incomeSelector,
+        track: tweet.key,
         retweeted: tweet.retweeted,
         created: Date.now(),
         userId: tweet.userId
@@ -42,10 +42,6 @@ exports.getTweetsForCache = function (trackValue, next) {
 };
 
 exports.getTweets = function (start, stop, next) {
-    console.log();
-    console.log('Start:' + start);
-    console.log('Stop:' + stop);
-    console.log();
     Tweet.find({ 'created': { "$gte": start, "$lt": stop } }, function (err, tweets) {
         if (err) {
             console.log(err);
@@ -61,4 +57,4 @@ exports.removeAllTweets = function (next) {
         }
         next(null);
     });
-}
+};

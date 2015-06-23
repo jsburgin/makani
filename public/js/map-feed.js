@@ -44,7 +44,7 @@ $(function () {
     socket.on('receivecache', function (cache) {
         for (var i = 0; i < cache.length; i++) {
             var data = cache[i];
-            $('.income-tweet-container').prepend('<div><a target="_blank" href="' + data.tweetURL + '">@' + data.tweetAuthor + ': ' + data.tweetData + '</a></div>');
+            $('.income-tweet-container').prepend('<div><a target="_blank" href="' + data.url + '">@' + data.author + ': ' + data.text + '</a></div>');
         }
     });
 
@@ -65,18 +65,12 @@ $(function () {
             stateContainer[0].classList.add('highlight-map');
         }
 
-        if (incomingSelector == 'all' && runTweetFeeder) {
+        if ((incomingSelector == 'all' || incomingSelector == data.key) && runTweetFeeder) {
             var totalTweets = $('.income-tweet-container div').length;
             if (totalTweets >= 10) {
                 $('.income-tweet-container div:last-child').remove();
             };
-            $('.income-tweet-container').prepend('<div><a target="_blank" href="' + data.tweetURL + '">@' + data.tweetAuthor + ': ' + data.tweetData + '</a></div>');
-        } else if (incomingSelector == data.key && runTweetFeeder) {
-            var totalTweets = $('.income-tweet-container div').length;
-            if (totalTweets >= 10) {
-                $('.income-tweet-container div:last-child').remove();
-            };
-            $('.income-tweet-container').prepend('<div><a target="_blank" href="' + data.tweetURL + '">@' + data.tweetAuthor + ': ' + data.tweetData + '</a></div>');
+            $('.income-tweet-container').prepend('<div><a target="_blank" href="' + data.url + '">@' + data.author + ': ' + data.text + '</a></div>');
         }
 
     });

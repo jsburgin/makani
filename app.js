@@ -11,6 +11,7 @@ var express = require('express'),
 
 var routes = require('./routes/index'),
     map = require('./routes/map'),
+    heatmap = require('./routes/heatmap'),
     login = require('./routes/login'),
     sim = require('./routes/sim'),
     logout = require('./routes/logout'),
@@ -48,6 +49,7 @@ app.use(passport.session());
 app.use('/', routes);
 app.use('/login', login);
 app.use('/logout', logout);
+app.use('/heatmap', heatmap);
 app.use('/create', create);
 app.use('/map', map);
 app.use('/sim', sim);
