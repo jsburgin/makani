@@ -89,12 +89,12 @@ $(function () {
             if ($('.track-heatmap .heat-container').find(trackContainer).length) {
                 sortTracks(Number(trackContainer.getAttribute('track-count')), '.track-heatmap .heat-container', trackContainer);
             } else {
-                sortTracks(Number(trackContainer.getAttribute('track-count')), '.filter-heatmap .heat-container', trackContainer);
+                //sortTracks(Number(trackContainer.getAttribute('track-count')), '.filter-heatmap .heat-container', trackContainer);
             }
 
         }
         
-        if ((incomingSelector == 'all' || incomingSelector == data.key) && runTweetFeeder) {
+        if ((incomingSelector == 'all' || incomingSelector in data.keys) && runTweetFeeder) {
             var totalTweets = $('.income-tweet-container div').length;
             if (totalTweets >= 10) {
                 $('.income-tweet-container div:last-child').remove();

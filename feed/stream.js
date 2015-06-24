@@ -79,36 +79,21 @@ module.exports = function (io) {
         feedReady = true;
         checkService();
 
-        function emitTweet(tweetPackage) {
-            console.log(tweetPackage);
-            io.emit('tweet', tweetPackage);
-            for (key in tweetPackage.keys) {
-                tweetCaches[key].push(tweetPackage);
-                countService.updateCount(key, function(err) {
-                    if (err) {
-                        console.log(err);
-                    }
-                });
-            }
-            tweetService.addTweet(tweetPackage, function(err) {
-                if (err) {
-                    console.log(err);
-                }
-            });
-        }
-
         stream.on('tweet', function(tweet) {
             
             if (tweet.text != undefined) {
 
                 var text = tweet.text.toLowerCase(),
+                    foundFilters = false,
                     tweetPackage = {
                         text: tweet.text,
                         author: tweet.user.name,
                         tweetId: tweet.id_str,
                         userId: tweet.user.id_str,
                         retweeted: tweet.retweeted,
-                        keys: {}   
+                        keys: {},
+                        keyCount: 0,
+                        url: 'http://twitter.com/' + tweet.user.id_str + '/status/' + tweet.id_str  
                     }
 
                 function emitTweet(tweetPackage) {
@@ -121,45 +106,50 @@ module.exports = function (io) {
                     });
 
                     for (key in tweetPackage.keys) {
+                        if (tweetCaches[key].length > 9) {
+                            tweetCaches[key].splice(0,1);
+                        }
+                        tweetCaches[key].push(tweetPackage);
                         countService.updateCount(key, function(err) {
                             if (err) {
                                 console.log(err);
                             }
                         });
                     }
-
                 }    
 
                 function findNextMatchingTrack(trackIndex) {
                     var t = originalTrackList[trackIndex].toLowerCase();
                     if (text.indexOf(t) != -1) {
                         tweetPackage.keys[t] = ++trackCountPairs.tracks[t];
-                    }
-
-                    function findNextMatchingFilter(filterIndex, nextTrack, currentTrackIndex) {
-                        var f = tracksToWatch[filterIndex].toLowerCase();
-                        if (text.indexOf(f) != -1) {
-                            tweetPackage.keys[f] = ++trackCountPairs.tracks[f];
-                        }
-
-                        if (filterIndex != tracksToWatch.length - 1) {
-                            setTimeout(findNextMatchingFilter, 0, filterIndex + 1, nextTrack, currentTrackIndex);
-                        } else {
-                            setTimeout(nextTrack, 0, currentTrackIndex + 1);
-                        }
+                        tweetPackage.keyCount++;
                     }
 
                     if (trackIndex == originalTrackList.length - 1) {
-                        setTimeout(emitTweet, 0, tweetPackage);
-                    } else if (trackIndex != 0) {
-                        setTimeout(findNextMatchingTrack, 0, trackIndex + 1);
+                        if (tweetPackage.keyCount != 0) {
+                            delete tweetPackage['keyCount'];
+                            findNextMatchingFilter(0);
+
+                            function findNextMatchingFilter(filterIndex) {
+                                var f = tracksToWatch[filterIndex].toLowerCase();
+                                if (text.indexOf(f) != -1) {
+                                    tweetPackage.keys[f] = ++trackCountPairs.tracks[f];
+                                }
+
+                                if (filterIndex != tracksToWatch.length - 1) {
+                                    setTimeout(findNextMatchingFilter, 0, filterIndex + 1);
+                                } else {
+                                    setTimeout(emitTweet, 0, tweetPackage);
+                                }
+                            }
+
+                        }
                     } else {
-                        setTimeout(findNextMatchingFilter, 0, 0, findNextMatchingTrack, trackIndex);
+                        setTimeout(findNextMatchingTrack, 0, trackIndex + 1);
                     }
                 }
 
                 findNextMatchingTrack(0);
-
             }
         });
 

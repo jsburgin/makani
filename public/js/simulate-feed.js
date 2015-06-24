@@ -70,36 +70,38 @@ $(function () {
     });
 
     socket.on('simTweet', function (data) {
-        var trackContainer = document.getElementById(data.key);
-        if (trackContainer != null) {
-            trackContainer.innerHTML = '<span class="remove-filter glyphicon glyphicon-remove-circle"></span> ' + data.key + ': ' + data.newCount;
-            trackContainer.setAttribute('track-count', data.newCount);
-            trackContainer.classList.remove('highlight');
-            trackContainer.focus();
-            trackContainer.classList.add('highlight');
-        }
+        for (key in data.keys) {
+            var trackContainer = document.getElementById(key);
+            if (trackContainer != null) {
+                trackContainer.innerHTML = '<span class="remove-filter glyphicon glyphicon-remove-circle"></span> ' + key + ': ' + data.keys[key];
+                trackContainer.setAttribute('track-count', data.keys[key]);
+                trackContainer.classList.remove('highlight');
+                trackContainer.focus();
+                trackContainer.classList.add('highlight');
+            }
 
-        function sortTracks(selectedTrackCount, container, trackContainer) {
-            var trackList = $(container).find('div');
-            for (var i = 0; i < trackList.length; i++) {
-                if (trackList[i] == trackContainer) {
-                    break;
-                }
-                if (selectedTrackCount > Number($(trackList[i]).attr('track-count'))) {
-                    var temp = $(trackContainer);
-                    $(trackContainer).remove();
-                    $(trackList[i]).before(temp);
+            function sortTracks(selectedTrackCount, container, trackContainer) {
+                var trackList = $(container).find('div');
+                for (var i = 0; i < trackList.length; i++) {
+                    if (trackList[i] == trackContainer) {
+                        break;
+                    }
+                    if (selectedTrackCount > Number($(trackList[i]).attr('track-count'))) {
+                        var temp = $(trackContainer);
+                        $(trackContainer).remove();
+                        $(trackList[i]).before(temp);
+                    }
                 }
             }
-        }
 
-        sortTracks(Number(trackContainer.getAttribute('track-count')), '.track-heatmap .heat-container', trackContainer);
+            sortTracks(Number(trackContainer.getAttribute('track-count')), '.track-heatmap .heat-container', trackContainer);
+        }
 
         var date = new Date(data.created);
         $('.time-box p').html(date);
 
 
-        if ((incomingSelector == 'all' || incomingSelector == data.key) && runTweetFeeder) {
+        if ((incomingSelector == 'all' || incomingSelector in data.keys) && runTweetFeeder) {
             var totalTweets = $('.income-tweet-container div').length;
             if (totalTweets >= 10) {
                 $('.income-tweet-container div:last-child').remove();

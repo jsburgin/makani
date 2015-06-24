@@ -25,17 +25,22 @@ module.exports = function(socket, dates, originalTrackList) {
             var tweetCount = 0,
                 lastTweetTime = 0;
             function emitTweet(tweetCount) {
-                trackCounts.tracks[data[tweetCount].track]++;
                 var tweetPackage = {
-                    key: data[tweetCount].track,
-                    newCount: trackCounts.tracks[data[tweetCount].track],
                     text: data[tweetCount].text,
                     author: data[tweetCount].userName,
                     created: data[tweetCount].created,
-                    url: 'http://twitter.com/' + data[tweetCount].userId + '/status/' + data[tweetCount].tweetId
+                    url: 'http://twitter.com/' + data[tweetCount].userId + '/status/' + data[tweetCount].tweetId,
+                    keys: {}
                 }
-                socket.emit('simTweet', tweetPackage);
+                for (var i = 0; i < data[tweetCount].keys.length; i++) {
+                    var currentTrack = data[tweetCount].keys[i].track;
+                    tweetPackage.keys[currentTrack] = ++trackCounts.tracks[currentTrack];
+                    if (i == data[tweetCount].keys.length - 1) {
+                        socket.emit('simTweet', tweetPackage);
+                    }
+                }
                 lastTweetTime = data[tweetCount].created;
+                // update index
                 tweetCount++;
                 if (tweetCount < data.length) {
                     setTimeout(emitTweet, Math.abs(data[tweetCount].created - lastTweetTime), tweetCount);

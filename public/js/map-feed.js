@@ -49,23 +49,26 @@ $(function () {
     });
 
     socket.on('tweet', function (data) {
-        var trackContainer = document.getElementById(data.key);
-        if (trackContainer != null) {
-            $('div#' + data.key).html(data.key + ': ' + data.newCount);
-            trackContainer.classList.remove('highlight');
-            trackContainer.focus();
-            trackContainer.classList.add('highlight');
+        console.log(data.keys);
+        for (key in data.keys) {
+            var trackContainer = document.getElementById(key);
+            if (trackContainer != null) {
+                $('div#' + data.key).html(data.key + ': ' + data.keys[key]);
+                trackContainer.classList.remove('highlight');
+                trackContainer.focus();
+                trackContainer.classList.add('highlight');
+            }
+            //console.log(key);
+            var stateContainer = document.getElementsByClassName(key);
+            if (stateContainer.length > 0) {
+                stateContainer[0].classList.remove('highlight-map');
+                stateContainer[0].focus();
+                stateContainer[0].classList.add('highlight-map');
+            }   
         }
+        
 
-        var stateContainer = document.getElementsByClassName(data.key);
-        console.log(data.key);
-        if (stateContainer.length > 0) {
-            stateContainer[0].classList.remove('highlight-map');
-            stateContainer[0].focus();
-            stateContainer[0].classList.add('highlight-map');
-        }
-
-        if ((incomingSelector == 'all' || incomingSelector == data.key) && runTweetFeeder) {
+        if ((incomingSelector == 'all' || incomingSelector in data.keys) && runTweetFeeder) {
             var totalTweets = $('.income-tweet-container div').length;
             if (totalTweets >= 10) {
                 $('.income-tweet-container div:last-child').remove();
