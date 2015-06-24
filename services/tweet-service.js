@@ -4,12 +4,16 @@ exports.addTweet = function (tweet, next) {
     var newTweet = new Tweet({
         userName: tweet.author,
         text: tweet.text,
-        tweetId: tweet.id,
-        track: tweet.key,
+        tweetId: tweet.tweetId,
+        userId: tweet.userId,
+        keys: [],
         retweeted: tweet.retweeted,
-        created: Date.now(),
-        userId: tweet.userId
+        created: Date.now()
     });
+
+    for (key in tweet.keys) {
+        newTweet.keys.push({track: key});
+    }
     
     newTweet.save(function (err) {
         if (err) {
