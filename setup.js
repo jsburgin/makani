@@ -1,4 +1,6 @@
-var countService = require('./services/count-service');
+var countService = require('./services/count-service'),
+	fs = require('fs'),
+	prompt = require('prompt');
 
 module.exports = function() {
 
@@ -11,7 +13,7 @@ module.exports = function() {
 		}
 	}
 
-	var originalTracks = ['road','rain','cloud','wind','storm','crash','thunder','snow','destroy','damage','flood','clouds','lightning','tornado','thunderstorm','cloudy','raning','disaster','drought','crashed','earthquake','flooding','windy','alwx'];
+	var originalTracks = ['road','rain','cloud','wind','storm','crash','thunder','snow','destroy','damage','flood','clouds','lightning','tornado','thunderstorm','cloudy','raining','disaster','drought','crashed','earthquake','flooding','windy','alwx'];
 
 	for (var i = 0; i < originalTracks.length; i++) {
 		!function addTrack(trackValue) {
@@ -19,7 +21,6 @@ module.exports = function() {
 				track: trackValue,
 				type: 0
 			}
-			console.log(trackPackage);
 			countService.addCount(trackPackage, function(err) {
 				if (err) {
 					console.log(err);
@@ -36,7 +37,6 @@ module.exports = function() {
 				track: trackValue,
 				type: 1
 			}
-			console.log(trackPackage);
 			countService.addCount(trackPackage, function(err) {
 				if (err) {
 					console.log(err);
@@ -44,4 +44,22 @@ module.exports = function() {
 			});
 		}(originalFilters[i]);
 	}
+
+	function setEnvironment() {
+		prompt.start();
+
+		prompt.get(['consumerkey', 'consumersecret', 'accesstoken', 'accesstokensecret'], function(err, result) {
+			var envString = 'CONSUMER_KEY=' + result.consumerkey + '\nCONSUMER_SECRET=' + result.consumersecret + '\nACCESS_TOKEN=' + result.accesstoken + '\nACCESS_TOKEN_SECRET=' + result.accesstokensecret;
+			fs.writeFile('./.env', envString, function(err) {
+				if (err) {
+					console.log(err);
+				} else {
+					console.log('Restarting for changes to take effect...');
+					process.exit();
+				}
+			})
+		});
+	}
+
+	setTimeout(setEnvironment, 500);
 }
