@@ -20,7 +20,7 @@ module.exports = function() {
 				type: 0
 			}
 			console.log(trackPackage);
-			countService.addTrack(trackPackage, function(err) {
+			countService.addCount(trackPackage, function(err) {
 				if (err) {
 					console.log(err);
 				}
@@ -37,7 +37,7 @@ module.exports = function() {
 				type: 1
 			}
 			console.log(trackPackage);
-			countService.addTrack(trackPackage, function(err) {
+			countService.addCount(trackPackage, function(err) {
 				if (err) {
 					console.log(err);
 				}
