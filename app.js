@@ -7,7 +7,8 @@ var express = require('express'),
     bodyParser = require('body-parser'),
     mongoose = require('mongoose'),
     passport = require('passport'),
-    expressSession = require('express-session');
+    expressSession = require('express-session'),
+    setup = require('./setup');
 
 var routes = require('./routes/index'),
     map = require('./routes/map'),
@@ -45,6 +46,11 @@ app.use(expressSession({
 
 app.use(passport.initialize());
 app.use(passport.session());
+
+if (process.argv.indexOf('setup') != -1) {
+  console.log('running initial setup, please wait...');
+  setup();
+}
 
 app.use('/', routes);
 app.use('/login', login);

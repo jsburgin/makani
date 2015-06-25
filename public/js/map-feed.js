@@ -53,7 +53,7 @@ $(function () {
         for (key in data.keys) {
             var trackContainer = document.getElementById(key);
             if (trackContainer != null) {
-                $('div#' + data.key).html(data.key + ': ' + data.keys[key]);
+                $('div#' + key).html(key + ': ' + data.keys[key]);
                 trackContainer.classList.remove('highlight');
                 trackContainer.focus();
                 trackContainer.classList.add('highlight');

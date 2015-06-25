@@ -28,7 +28,10 @@ var server = http.createServer(app);
 server.listen(port);
 
 var io = require('socket.io').listen(server);
-require('../feed/stream')(io);
+
+if (process.argv.indexOf('setup') == -1) {
+  require('../feed/stream')(io);
+}
 
 server.on('error', onError);
 server.on('listening', onListening);
