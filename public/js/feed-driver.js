@@ -46,20 +46,51 @@ $(function () {
     $('body').on('click', '.heatmap-entry', function (event) {
         // check to see if element has been removed
         if(!removeFilter) {
-            incomingSelector = event.currentTarget.id;
-            $('.income-tweet-text').html(event.target.id);
-            $('.income-tweet-container div').remove();
-            socket.emit('getcache', event.currentTarget.id);
+            $('#' + incomingSelector).css('text-decoration', 'none');
+            if (incomingSelector == event.currentTarget.id) {
+                incomingSelector = 'all';
+                $('.income-tweet-text').html(incomingSelector);
+                $('.income-tweet-container div').remove();
+            } else {
+                incomingSelector = event.currentTarget.id;
+                $('#' + event.currentTarget.id).css('text-decoration', 'underline');
+                $('.income-tweet-text').html(event.target.id);
+                $('.income-tweet-container div').remove();
+                socket.emit('getcache', event.currentTarget.id);
+            } 
         }
         removeFilter = false;
     });
     
+
+    $('.reset-tracks').click(function() {
+        if (incomingSelector != 'all') {
+            incomingSelector = 'all';
+            $('.income-tweet-text').html(incomingSelector);
+            $('.income-tweet-container div').remove();   
+        } 
+    });
+
     socket.on('receivecache', function (cache) {
         for (var i = 0; i < cache.length; i++) {
             var data = cache[i];
             $('.income-tweet-container').prepend('<div><a target="_blank" href="' + data.url + '">@' + data.author + ': ' + data.text + '</a></div>');
         }
     });
+
+    function sortTracks(selectedTrackCount, container, trackContainer) {
+        var trackList = $(container).find('div');
+        for (var i = 0; i < trackList.length; i++) {
+            if (trackList[i] == trackContainer) {
+                break;
+            }
+            if (selectedTrackCount > Number($(trackList[i]).attr('track-count'))) {
+                var temp = $(trackContainer);
+                $(trackContainer).remove();
+                $(trackList[i]).before(temp);
+            }
+        }
+    }
 
     socket.on('tweet', function (data) {
         for (key in data.keys) {
@@ -70,28 +101,13 @@ $(function () {
                 trackContainer.classList.remove('highlight');
                 trackContainer.focus();
                 trackContainer.classList.add('highlight');
-            }
-
-            function sortTracks(selectedTrackCount, container, trackContainer) {
-                var trackList = $(container).find('div');
-                for (var i = 0; i < trackList.length; i++) {
-                    if (trackList[i] == trackContainer) {
-                        break;
-                    }
-                    if (selectedTrackCount > Number($(trackList[i]).attr('track-count'))) {
-                        var temp = $(trackContainer);
-                        $(trackContainer).remove();
-                        $(trackList[i]).before(temp);
-                    }
+  
+                if ($('.track-heatmap .heat-container').find(trackContainer).length) {
+                    sortTracks(Number(trackContainer.getAttribute('track-count')), '.track-heatmap .heat-container', trackContainer);
+                } else {
+                    sortTracks(Number(trackContainer.getAttribute('track-count')), '.filter-heatmap .heat-container', trackContainer);
                 }
             }
-            
-            if ($('.track-heatmap .heat-container').find(trackContainer).length) {
-                sortTracks(Number(trackContainer.getAttribute('track-count')), '.track-heatmap .heat-container', trackContainer);
-            } else {
-                //sortTracks(Number(trackContainer.getAttribute('track-count')), '.filter-heatmap .heat-container', trackContainer);
-            }
-
         }
         
         if ((incomingSelector == 'all' || incomingSelector in data.keys) && runTweetFeeder) {
@@ -118,6 +134,18 @@ $(function () {
     });
 
     socket.on('filtercount', function (filterPackage) {
-        $('.filter-heatmap .heat-container').append('<div class="col-md-2 heatmap-entry" id="' + filterPackage.filter + '" track-count="' + filterPackage.count + '"><span class="remove-filter glyphicon glyphicon-remove-circle"></span> ' + filterPackage.filter + ': ' + filterPackage.count + '</div>');
+        var filterList = $('.filter-heatmap .heat-container').find('div'),
+            inserted = false,
+            filterElement = '<div class="col-md-2 heatmap-entry" id="' + filterPackage.filter + '" track-count="' + filterPackage.count + '"><span class="remove-filter glyphicon glyphicon-remove-circle"></span> ' + filterPackage.filter + ': ' + filterPackage.count + '</div>';
+        for (var i = 0; i < filterList.length; i++) {
+            if (filterPackage.count > Number($(filterList[i]).attr('track-count'))) {
+                $(filterList[i]).before(filterElement);
+                inserted = true;
+                break;
+            }
+        }
+        if (!inserted) {
+            $('.filter-heatmap .heat-container').append(filterElement);
+        }
     });
 });

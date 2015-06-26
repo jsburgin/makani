@@ -93,7 +93,7 @@ module.exports = function (io) {
                         retweeted: tweet.retweeted,
                         keys: {},
                         keyCount: 0,
-                        url: 'http://twitter.com/' + tweet.user.id_str + '/status/' + tweet.id_str  
+                        url: 'http://twitter.com/' + tweet.user.id_str + '/status/' + tweet.id_str
                     }
 
                 function emitTweet(tweetPackage) {

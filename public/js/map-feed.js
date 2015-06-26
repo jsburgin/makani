@@ -49,7 +49,6 @@ $(function () {
     });
 
     socket.on('tweet', function (data) {
-        console.log(data.keys);
         for (key in data.keys) {
             var trackContainer = document.getElementById(key);
             if (trackContainer != null) {
@@ -58,12 +57,11 @@ $(function () {
                 trackContainer.focus();
                 trackContainer.classList.add('highlight');
             }
-            //console.log(key);
-            var stateContainer = document.getElementsByClassName(key);
-            if (stateContainer.length > 0) {
-                stateContainer[0].classList.remove('highlight-map');
-                stateContainer[0].focus();
-                stateContainer[0].classList.add('highlight-map');
+            var stateContainer = document.getElementsByClassName(key)[0];
+            if (stateContainer != undefined) {
+                stateContainer.classList.remove('highlight-map');
+                stateContainer.focus();
+                stateContainer.classList.add('highlight-map');
             }   
         }
         
@@ -81,7 +79,5 @@ $(function () {
     uStates.draw("#statesvg");
     $(document).on('click', '.state', function () {
         alert('clicked');
-    });
-
-    
+    }); 
 });

@@ -266,3 +266,8 @@ a.create-account-button {
 .time-form input {
     margin-bottom: 15px;
 }
+
+.reset-tracks:hover {
+    cursor: pointer;
+    text-decoration: underline;
+}

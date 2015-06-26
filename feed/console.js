@@ -38,6 +38,8 @@ module.exports = function(stream) {
                     console.log('User removed successfully.\n');
                 }
             });
+        } else if (text.indexOf('exit') != -1) {
+            process.exit();
         }
     });
 }
