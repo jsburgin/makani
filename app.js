@@ -8,16 +8,19 @@ var express = require('express'),
     mongoose = require('mongoose'),
     passport = require('passport'),
     expressSession = require('express-session'),
-    setup = require('./setup');
+    setup = require('./setup'),
+    connectMongo = require('connect-mongo');
 
 var routes = require('./routes/index'),
     map = require('./routes/map'),
-    heatmap = require('./routes/heatmap'),
     login = require('./routes/login'),
     sim = require('./routes/sim'),
     logout = require('./routes/logout'),
     create = require('./routes/create'),
     config = require('./config');
+    
+
+var MongoStore = connectMongo(expressSession);
 
 var passportConfig = require('./auth/passport-config'),
     restrict = require('./auth/restrict');
@@ -41,7 +44,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(expressSession({
     secret: 'dj89gja24kd9akl11jf876',
     saveUninitialized: false,
-    resave: false
+    resave: false,
+    store: new MongoStore({
+      mongooseConnection: mongoose.connection
+    })
 }));
 
 app.use(passport.initialize());
@@ -55,7 +61,6 @@ if (process.argv.indexOf('setup') != -1) {
 app.use('/', routes);
 app.use('/login', login);
 app.use('/logout', logout);
-app.use('/heatmap', heatmap);
 app.use('/create', create);
 app.use('/map', map);
 app.use('/sim', sim);

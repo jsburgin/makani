@@ -1,7 +1,6 @@
 var tweetService = require('../services/tweet-service'),
 	userService = require('../services/user-service'),
 	countService = require('../services/count-service');
-
 module.exports = function(stream) {
 	process.stdin.on('data', function (text) {
         if (text.indexOf('clear track counts') != -1 || text.indexOf('delete all tweets') != -1) {

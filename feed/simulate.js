@@ -13,6 +13,12 @@ module.exports = function(socket, dates, originalTrackList) {
         trackCounts.tracks[originalTrackList[i]] = 0;
     }
 
+    var rate = 1
+
+    socket.on('changespeed', function(newSpeed) {
+        rate = 1 / newSpeed;
+    });
+
     // send initial data
     socket.emit('simInit', trackCounts);
 
@@ -43,7 +49,7 @@ module.exports = function(socket, dates, originalTrackList) {
                 // update index
                 tweetCount++;
                 if (tweetCount < data.length) {
-                    setTimeout(emitTweet, Math.abs(data[tweetCount].created - lastTweetTime), tweetCount);
+                    setTimeout(emitTweet, rate * Math.abs(data[tweetCount].created - lastTweetTime), tweetCount);
                 } else {
                     next(cbObj);
                 }

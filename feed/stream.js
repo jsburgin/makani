@@ -27,15 +27,7 @@ module.exports = function (io) {
         };
     
     
-    var firstDate = null,
-        simReady = false,
-        feedReady = false;
-
-    function checkService() {
-        if (simReady && feedReady) {
-            console.log('');
-        }
-    }
+    var firstDate = null;
     
     // find start date for simulations
     tweetService.getFirstTweet(function (err, date) {
@@ -51,9 +43,6 @@ module.exports = function (io) {
             console.log('Simulation ready.');
             console.log('Starting record: ' + firstDate);
         }
-
-        simReady = true;
-        checkService();
     });
     
     // generate original tracks
@@ -76,8 +65,6 @@ module.exports = function (io) {
         
         var stream = client.stream('statuses/filter', { track: originalTrackList });
         console.log('Feeder ready.');
-        feedReady = true;
-        checkService();
 
         stream.on('tweet', function(tweet) {
             

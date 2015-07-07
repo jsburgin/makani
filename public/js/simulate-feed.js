@@ -4,9 +4,11 @@ $(function () {
     $('.income-tweet-text').html(incomingSelector);
     var runTweetFeeder = true;
 
-    //socket.emit('runningSim', null);
-
     $('.sim').hide();
+
+    $('.speed button').click(function() {
+        socket.emit('changespeed', $(this).attr('speed-value'));
+    });
     
     $('.simulate-form').submit(function () {
         $('.sim-form').hide();
@@ -60,6 +62,7 @@ $(function () {
         for (var key in data.tracks) {
             $('.track-heatmap .heat-container').append('<div class="col-md-2 heatmap-entry" id="' + key + '">' + key + ': ' + 0 + '</div>');
         }
+        uStates.draw("#statesvg");
     });
 
     $('body').on('click', '.heatmap-entry', function (event) {
@@ -67,6 +70,15 @@ $(function () {
         $('.income-tweet-text').html(event.target.id);
         $('.income-tweet-container div').remove();
         //socket.emit('getcache', event.currentTarget.id);
+    });
+
+    $('body').on('click', '.state', function (event) {
+        event.preventDefault();
+        var state = event.target.getAttribute('state-name');
+        incomingSelector = state;
+        $('.income-tweet-text').html(state);
+        $('.income-tweet-container div').remove();
+        //socket.emit('getcache', state);
     });
 
     socket.on('simTweet', function (data) {
@@ -78,23 +90,31 @@ $(function () {
                 trackContainer.classList.remove('highlight');
                 trackContainer.focus();
                 trackContainer.classList.add('highlight');
-            }
+            
 
-            function sortTracks(selectedTrackCount, container, trackContainer) {
-                var trackList = $(container).find('div');
-                for (var i = 0; i < trackList.length; i++) {
-                    if (trackList[i] == trackContainer) {
-                        break;
-                    }
-                    if (selectedTrackCount > Number($(trackList[i]).attr('track-count'))) {
-                        var temp = $(trackContainer);
-                        $(trackContainer).remove();
-                        $(trackList[i]).before(temp);
+                function sortTracks(selectedTrackCount, container, trackContainer) {
+                    var trackList = $(container).find('div');
+                    for (var i = 0; i < trackList.length; i++) {
+                        if (trackList[i] == trackContainer) {
+                            break;
+                        }
+                        if (selectedTrackCount > Number($(trackList[i]).attr('track-count'))) {
+                            var temp = $(trackContainer);
+                            $(trackContainer).remove();
+                            $(trackList[i]).before(temp);
+                        }
                     }
                 }
+
+                sortTracks(Number(trackContainer.getAttribute('track-count')), '.track-heatmap .heat-container', trackContainer);
             }
 
-            sortTracks(Number(trackContainer.getAttribute('track-count')), '.track-heatmap .heat-container', trackContainer);
+            var stateContainer = document.getElementsByClassName(key)[0];
+            if (stateContainer != undefined) {
+                stateContainer.classList.remove('highlight-map');
+                stateContainer.focus();
+                stateContainer.classList.add('highlight-map');
+            } 
         }
 
         var date = new Date(data.created);

@@ -27,7 +27,7 @@ $(function () {
     socket.on('initialData', function (data) {
         $('.track-heatmap .heat-container').html('');
         for (var key in data.tracks) {
-            $('.track-heatmap .heat-container').append('<div class="col-xs-6 col-sm-4 col-md-2 heatmap-entry" id="' + key + '" track-count="' + data.tracks[key] + '"><span class="remove-filter glyphicon glyphicon-remove-circle"></span> ' + key + ': ' + data.tracks[key] + '</div>');
+            $('.track-heatmap .heat-container').append('<div class="col-xs-6 col-sm-4 col-md-2 heatmap-entry" id="' + key + '" track-count="' + data.tracks[key] + '"><span class="remove-filter glyphicon glyphicon-remove-circle"></span> ' + key + ': ' + data.tracks[key].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + '</div>');
         }
     });
     
@@ -62,7 +62,6 @@ $(function () {
         removeFilter = false;
     });
     
-
     $('.reset-tracks').click(function() {
         if (incomingSelector != 'all') {
             incomingSelector = 'all';
@@ -96,7 +95,7 @@ $(function () {
         for (key in data.keys) {
             var trackContainer = document.getElementById(key);
             if (trackContainer != null) {
-                trackContainer.innerHTML = '<span class="remove-filter glyphicon glyphicon-remove-circle"></span> ' + key + ': ' + data.keys[key];
+                trackContainer.innerHTML = '<span class="remove-filter glyphicon glyphicon-remove-circle"></span> ' + key + ': ' + data.keys[key].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
                 trackContainer.setAttribute('track-count', data.keys[key]);
                 trackContainer.classList.remove('highlight');
                 trackContainer.focus();

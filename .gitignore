@@ -8,3 +8,8 @@ npm-debug.log
 makani.sublime-project
 makani.sublime-workspace
 npm-debug
+*.njsproj
+*.dll
+*.v12.suo
+obj
+bin
