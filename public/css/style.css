@@ -30,6 +30,8 @@ path {
     fill: #2e3135;
     stroke: #fff;
     //stroke-width: .6;
+    -webkit-transition: fill .5s;
+    transition: fill .5s;
 }
 
 path:hover {
@@ -87,6 +89,8 @@ body {
 	cursor: pointer;
 	padding: 10px;
     text-align: center;
+    transition: background .5s;
+    -webkit-transition: background .5s;
 }
 
 .income-tweet-container div {

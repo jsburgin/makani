@@ -4,6 +4,161 @@ $(function () {
     var inCounty = false;
     $('.income-tweet-text').html(incomingSelector);
     var runTweetFeeder = true;
+    var colors = null;
+    
+    
+    function paintStates(tracks) {
+        console.log(tracks);
+        stateObj = {
+            tracks: {}
+        }
+        for (var i = 0; i < tracks.length; i++) {
+            stateObj.tracks[$(tracks[i]).attr('state-name')] = 0;
+        }
+        var colors = gradientGenerator(stateObj);
+        console.log(colors);
+        for (var i = 0; i < tracks.length; i++) {
+            var stateName = $(tracks[i]).attr('state-name');
+            var fill = 'rgb(' + colors[stateName].r + ',' + colors[stateName].g + ',' + colors[stateName].b + ')';
+            $(tracks[i]).css("fill", fill);
+        }
+    }
+    
+    function gradientGenerator(data) {
+        var colorValues = [
+            {
+                r: 255,
+                g: 81,
+                b: 47
+            },
+            {
+                r: 221,
+                g: 36,
+                b: 118
+            },
+            {
+                r: 43,
+                g: 225,
+                b: 227
+            }
+        ];
+        
+        var colorStops = [];
+        var percentageStops = [];
+
+        var lastValue = colorValues[0];
+
+        for (var i = 1; i < colorValues.length; i++) {
+            colorStops.push([lastValue, colorValues[i]]);
+            percentageStops.push(i / (colorValues.length - 1));
+            lastValue = colorValues[i];
+        }
+        
+        var tracks = [];
+        for (key in data.tracks) {
+            tracks.push(key);
+        }
+        
+        var groups = [];
+        for (var i = 0; i < percentageStops.length; i++) {
+            groups.push([]);
+        }
+         
+        for (var i = 0; i <= tracks.length; i++) {
+            indexPercentage = (i + 1) / tracks.length;
+
+            for (var j = 0; j < percentageStops.length; j++) {
+                if (indexPercentage <= percentageStops[j]) {
+                    groups[j].push(tracks[i]);
+                    break;
+                }    
+            }
+        }
+        
+        trackColors = {}
+        
+        trackColors[groups[0][0]] = colorStops[0][0];
+        for (var i = 0; i < groups.length; i++) {
+            var start = colorStops[i][0],
+                end = colorStops[i][1];
+            
+            var diff = {
+                r: end.r - start.r,
+                g: end.g - start.g,
+                b: end.b - start.b
+            }
+            
+            
+            for (var j = 0; j < groups[i].length; j++) {
+                if (i == 0 && j == 0) {
+                    continue;
+                }
+
+                var keyPercent = (j + 1) / groups[i].length;
+                trackColors[groups[i][j]] = {
+                    r: Math.round(keyPercent * diff.r + start.r),
+                    g: Math.round(keyPercent * diff.g + start.g),
+                    b: Math.round(keyPercent * diff.b + start.b)
+                }
+
+            }
+        }
+
+        return trackColors;
+    }
+    
+    
+    
+    /*var trackColors = {};
+    function generateTrackColors(data) {
+        var start = {
+            red: 255,
+            green: 81,
+            blue: 47
+        }
+        
+        var end = {
+            red: 221,
+            green: 36,
+            blue: 118
+        }
+        
+        var diff = {
+            red: end.red - start.red,
+            green: end.green - start.green,
+            blue: end.blue - start.blue
+        }
+        
+        var colors = {}
+        
+        var length = 0;
+        for (key in data.tracks) {
+            length++;
+        }
+        
+        var count = 0;
+        for (key in data.tracks) {
+            if (count == 0) {
+                colors[key] = start;
+            } else if (count == length - 1) {
+                colors[key] = end;
+            } else {
+                colors[key] = {
+                    red: Math.round((count / length) * diff.red + start.red),
+                    green: Math.round((count / length) * diff.green + start.green),
+                    blue: Math.round((count / length) * diff.blue + start.blue)
+                };
+            }
+            count++;
+        }
+        
+        return colors;
+    }*/
+    
+    window.setTimeout(function () {
+        paintStates($('.us-map').find('.state'));
+    }, 100);
+    
 
     $('.toggle-incoming-button').click(function () {
         if (runTweetFeeder) {
@@ -24,6 +179,8 @@ $(function () {
         for (var key in data.tracks) {
             $('.track-heatmap .heat-container').append('<div class="col-md-2 heatmap-entry" id="' + key + '">' + key + ': ' + data.tracks[key].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + '</div>');
         }
+        gradientGenerator(data);
+        colors = gradientGenerator(data);
     });
 
     $('body').on('click', '.heatmap-entry', function (event) {
@@ -150,7 +307,6 @@ $(function () {
         var zoom = d3.behavior.zoom()
 			.on("zoom", function () {
             g.attr("transform", "translate(" + d3.event.translate.join(",") + ")scale(" + d3.event.scale + ")");
-            console.log()
         });
         
         svg.call(zoom);
@@ -164,6 +320,7 @@ $(function () {
 				.data(topojson.feature(topology, topology.objects[data.name]).features)
 				.enter().append("path")
                 .attr("d", path)
+                .attr("class", 'county')
                 .attr("id", function (d) {
                 return d.properties.NAME;
             })
@@ -171,6 +328,24 @@ $(function () {
                 return data.rotate;
             });
         });
+
+        window.setTimeout(function () {
+            var counties = $('.county');
+            var countyObj = {
+                tracks: {}
+            }
+            for (var i = 0; i < counties.length; i++) {
+                countyObj.tracks[$(counties[i]).attr('id')] = 0;
+            }
+
+            var colors = gradientGenerator(countyObj);
+            for (var i = 0; i < counties.length; i++) {
+                var county = $(counties[i]).attr('id');
+                var fill = 'rgb(' + colors[county].r + ',' + colors[county].g + ',' + colors[county].b + ')';
+                $(counties[i]).css("fill", fill);
+            }
+            
+        }, 200);
     }
     
     socket.on('receivecache', function (cache) {
@@ -181,19 +356,19 @@ $(function () {
     });
 
     socket.on('tweet', function (data) {
+        var primaryKey = null;
         for (key in data.keys) {
             var trackContainer = document.getElementById(key);
             if (trackContainer != null) {
                 $('div#' + key).html(key + ': ' + data.keys[key].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
-                trackContainer.classList.remove('highlight');
-                trackContainer.focus();
-                trackContainer.classList.add('highlight');
+                trackContainer.style.background = 'rgb(' + colors[key].r + ',' + colors[key].g + ',' + colors[key].b + ')';
+                window.setTimeout(function (trackContainer) {
+                    trackContainer.style.background = '#2e3135';
+                }, 250, trackContainer);
             }
             var stateContainer = document.getElementsByClassName(key)[0];
             if (stateContainer != undefined) {
-                stateContainer.classList.remove('highlight-map');
-                stateContainer.focus();
-                stateContainer.classList.add('highlight-map');
+                
             }   
         }
         
@@ -212,5 +387,7 @@ $(function () {
 
     $(document).on('click', '.state', function () {
         alert('clicked');
-    }); 
+    });
+    
 });
+
