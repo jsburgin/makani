@@ -28,14 +28,13 @@
 
 path {
     fill: #2e3135;
-    stroke: #fff;
+    stroke: #181A1C;
     //stroke-width: .6;
     -webkit-transition: fill .5s;
     transition: fill .5s;
 }
 
 path:hover {
-    fill: #37bb98;
     cursor: pointer;
 }
 
@@ -57,7 +56,7 @@ a.revert-map {
 
 body {
     color: #fff !important;
-    background: #22252a;
+    background: #181A1C;
     padding-bottom: 40px;
 }
 
@@ -221,22 +220,29 @@ a.create-account-button {
 
 #statesvg {
     margin: 0 auto;
+
 }
 
 .state {
     fill: #2e3135;
-    stroke: #22252a;
-    stroke-width: 2;
+    stroke: #181A1C;
+    stroke-width: 1.2;
 }
 
 .state:hover {
     cursor: pointer;
-    fill: #404040;
+    opacity: .8;
+}
+
+.mapcenter {
+    width: 960px;
+    margin: 0 auto;
 }
 
 .us-map {
-    width: 960px;
+    width: 100%;
     margin: 0 auto;
+    border: 1px solid #2e3135;
 }
 
 .new-track.form-control {
@@ -264,6 +270,7 @@ a.create-account-button {
 }
 
 .user-box {
+    display: none;
     margin-top: 15px;
     float: right;
 }

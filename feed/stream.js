@@ -2,12 +2,26 @@ var Twit = require('twit'),
     tweetService = require('../services/tweet-service'),
     countService = require('../services/count-service'),
     userService = require('../services/user-service'),
+    locationService = require('../services/location-service'),
     devUtility = require('../feed/console'),
     simulator = require('../feed/simulate'),
+    map = require('../feed/map'),
+    gradient = require('../services/gradient'),
     util = require('util');
 require('dotenv').load();
 
 module.exports = function (io) {
+    
+    var data = ['one', 'two', 'three'];
+    
+    gradient.generateGradientArray(data, [{ r: 255, g: 255, b: 255 }, { r: 0, g: 0, b: 0}], function (err, colorObject) {
+        if (err) {
+            console.log(err);
+            process.exit(1);
+        }
+        
+        console.log(colorObject);
+    });
 
     process.stdin.setEncoding('utf8');
     
@@ -18,16 +32,16 @@ module.exports = function (io) {
         access_token_secret: process.env.ACCESS_TOKEN_SECRET
     });
     
-    var tracksToWatch = [],
-        originalTrackList = [],
+    var primaryTracks = [],
+        filters = [],
+        locations = [],
         tweetCaches = {},
-        filterCounts = {},
+        filterUsers = {},
         trackCountPairs = {
             tracks: {}
-        };
-    
-    
-    var firstDate = null;
+        },
+        locationCounts = {},
+        startingDate = null;
     
     // find start date for simulations
     tweetService.getFirstTweet(function (err, date) {
@@ -35,42 +49,84 @@ module.exports = function (io) {
             console.log(err);
             process.exit(1);
         }
-        
-        if (date == null) {
-            console.log('No records in database for simulation.');
-        } else {
-            firstDate = new Date(date);
-            console.log('Simulation ready.');
-            console.log('Starting record: ' + firstDate);
-        }
     });
+    
+    locationService.getAllLocations(function (err, allLocations) {
+
+        if (err) {
+            console.log(err);
+            process.exit(1);
+        }
+
+        for (var i = 0; i < allLocations.length; i++) {
+            locations.push(allLocations[i].name);
+            locationCounts[allLocations[i].name] = allLocations[i].tracks;
+        }
+
+    });
+    
+    
+    /*countService.getCountsOfType([0, 1], function (err, counts) {
+
+        if (err) {
+            console.log(err);
+        }
+        
+        var locations = [];
+        var tracks = [];
+        
+        for (var i = 0; i < counts.length; i++) {
+            if (counts[i].type == 0) {
+                tracks.push(counts[i]);
+            } else {
+                locations.push(counts[i].track);
+            }
+        }
+
+        var trackObj = {};
+        for (var i = 0; i < tracks.length; i++) {
+            trackObj[tracks[i].track] = 0;
+        }
+
+        for (var i = 0; i < locations.length; i++) {
+            locationService.addLocation(locations[i], trackObj, function (err) {
+                if (err) {
+                    console.log(err);
+                }
+            });
+        }
+
+    });*/
     
     // generate original tracks
     countService.getCountsOfType([0, 1, 2], function (err, counts) {
+
         if (err) {
             console.log(err);
             process.exit(1);
         } else {
+
             for (var i = 0; i < counts.length; i++) {
                 tweetCaches[counts[i].track] = [];
                 trackCountPairs.tracks[counts[i].track] = counts[i].value;
                 if (counts[i].type == 0) {
-                    originalTrackList.push(counts[i].track);
+                    primaryTracks.push(counts[i].track);
                 } else {
-                    filterCounts[counts[i].track] = counts[i].users;
-                    tracksToWatch.push(counts[i].track);
+                    filterUsers[counts[i].track] = counts[i].users;
+                    filters.push(counts[i].track);
                 }
             }
+
         }
         
-        var stream = client.stream('statuses/filter', { track: originalTrackList });
-        console.log('Feeder ready.');
+        
+        var stream = client.stream('statuses/filter', { track: primaryTracks });
 
         stream.on('tweet', function(tweet) {
             
             if (tweet.text != undefined) {
-
                 var text = tweet.text.toLowerCase(),
+                    location = tweet.user.location.toLowerCase(),
                     foundFilters = false,
                     tweetPackage = {
                         text: tweet.text,
@@ -80,11 +136,16 @@ module.exports = function (io) {
                         retweeted: tweet.retweeted,
                         keys: {},
                         keyCount: 0,
-                        url: 'http://twitter.com/' + tweet.user.id_str + '/status/' + tweet.id_str
+                        url: 'http://twitter.com/' + tweet.user.id_str + '/status/' + tweet.id_str,
+                        geo: tweet.coordinates
                     }
 
                 function emitTweet(tweetPackage) {
                     io.emit('tweet', tweetPackage);
+                    
+                    if (tweetPackage.geo) {
+                        map(io, tweetPackage);
+                    }
 
                     tweetService.addTweet(tweetPackage, function(err) {
                         if (err) {
@@ -106,31 +167,33 @@ module.exports = function (io) {
                 }    
 
                 function findNextMatchingTrack(trackIndex) {
-                    var t = originalTrackList[trackIndex].toLowerCase();
+
+                    var t = primaryTracks[trackIndex].toLowerCase();
                     if (text.indexOf(t) != -1) {
                         tweetPackage.keys[t] = ++trackCountPairs.tracks[t];
                         tweetPackage.keyCount++;
                     }
 
-                    if (trackIndex == originalTrackList.length - 1) {
+                    if (trackIndex == primaryTracks.length - 1) {
+
                         if (tweetPackage.keyCount != 0) {
                             delete tweetPackage['keyCount'];
                             findNextMatchingFilter(0);
 
                             function findNextMatchingFilter(filterIndex) {
-                                var f = tracksToWatch[filterIndex].toLowerCase();
-                                if (text.indexOf(f) != -1) {
+                                var f = filters[filterIndex].toLowerCase();
+                                if (location.indexOf(f) != -1 || text.indexOf(f) != -1) {
                                     tweetPackage.keys[f] = ++trackCountPairs.tracks[f];
                                 }
 
-                                if (filterIndex != tracksToWatch.length - 1) {
+                                if (filterIndex != filters.length - 1) {
                                     setTimeout(findNextMatchingFilter, 0, filterIndex + 1);
                                 } else {
                                     setTimeout(emitTweet, 0, tweetPackage);
                                 }
                             }
-
                         }
+
                     } else {
                         setTimeout(findNextMatchingTrack, 0, trackIndex + 1);
                     }
@@ -143,18 +206,22 @@ module.exports = function (io) {
         devUtility(stream);
         
         io.on('connection', function (socket) {
+
             // generate original list of tracks to send to client
-            var userEmail = null;
-            var baseTracksToSend = {
-                tracks: {}
-            };
-            for (var i = 0; i < originalTrackList.length; i++) {
-                baseTracksToSend.tracks[originalTrackList[i]] = trackCountPairs.tracks[originalTrackList[i]];
+            var userEmail = null,
+                baseTracksToSend = {
+                    tracks: {}
+                };
+
+            for (var i = 0; i < primaryTracks.length; i++) {
+                baseTracksToSend.tracks[primaryTracks[i]] = trackCountPairs.tracks[primaryTracks[i]];
             }
+
             socket.emit('initialData', baseTracksToSend);
-            socket.emit('startsim', firstDate);
+            socket.emit('startsim', startingDate);
             
             var filters = [];
+
             socket.on('connected', function (userID) {
                 userEmail = userID;
                 userService.getUserFilters(userID, function (err, userFilters) {
@@ -170,15 +237,16 @@ module.exports = function (io) {
             });
             
             socket.on('addfilter', function (filterData) {
+
                 filterData.track = filterData.track.toLowerCase();
-                if (originalTrackList.indexOf(filterData.track) == -1 && filters.indexOf(filterData.track) == -1) {
+                if (primaryTracks.indexOf(filterData.track) == -1 && filters.indexOf(filterData.track) == -1) {
                     var newFilter = filterData.track;
                     filters.push(newFilter);
-                    if (newFilter in filterCounts) {
-                        filterCounts[newFilter]++;
+                    if (newFilter in filterUsers) {
+                        filterUsers[newFilter]++;
                     } else {
-                        filterCounts[newFilter] = 1;
-                        tracksToWatch.push(newFilter);
+                        filterUsers[newFilter] = 1;
+                        filters.push(newFilter);
                         trackCountPairs.tracks[newFilter] = 0;
                         tweetCaches[newFilter] = [];
                     }
@@ -199,6 +267,7 @@ module.exports = function (io) {
                         }
                         socket.emit('filtercount', filterPackage);
                     });
+
                 }
             });
             
@@ -209,13 +278,13 @@ module.exports = function (io) {
             function removeFilter(filter) {
                 var localIndex = filters.indexOf(filter);
                 filters.splice(localIndex, 1);
-                if (filterCounts[filter] == 1) {
-                    var index = tracksToWatch.indexOf(filter);
-                    tracksToWatch.splice(index, 1);
+                if (filterUsers[filter] == 1) {
+                    var index = filters.indexOf(filter);
+                    filters.splice(index, 1);
                     delete trackCountPairs.tracks[filter];
-                    delete filterCounts[filter];
+                    delete filterUsers[filter];
                 } else {
-                    filterCounts[filter]--;
+                    filterUsers[filter]--;
                 }
             }
             
@@ -245,7 +314,7 @@ module.exports = function (io) {
             });
 
             socket.on('runSimulation', function (dates) {
-                simulator(socket, dates, originalTrackList);
+                simulator(socket, dates, primaryTracks);
             });
 
         });

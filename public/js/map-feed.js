@@ -5,6 +5,7 @@ $(function () {
     $('.income-tweet-text').html(incomingSelector);
     var runTweetFeeder = true;
     var colors = null;
+    var stateColors = null;
     
     
     function paintStates(tracks) {
@@ -17,11 +18,12 @@ $(function () {
         }
         var colors = gradientGenerator(stateObj);
         console.log(colors);
-        for (var i = 0; i < tracks.length; i++) {
+        /*for (var i = 0; i < tracks.length; i++) {
             var stateName = $(tracks[i]).attr('state-name');
             var fill = 'rgb(' + colors[stateName].r + ',' + colors[stateName].g + ',' + colors[stateName].b + ')';
             $(tracks[i]).css("fill", fill);
-        }
+        }*/
+        return colors;
     }
     
     function gradientGenerator(data) {
@@ -35,13 +37,16 @@ $(function () {
                 r: 221,
                 g: 36,
                 b: 118
-            },
-            {
-                r: 43,
-                g: 225,
-                b: 227
             }
         ];
+        
+        if (colorValues.length == 1) {
+            var trackColors = {};
+            for (key in data.tracks) {
+                trackColors[key] = colorValues[0];
+            }
+            return trackColors;
+        }
         
         var colorStops = [];
         var percentageStops = [];
@@ -156,7 +161,7 @@ $(function () {
     }*/
     
     window.setTimeout(function () {
-        paintStates($('.us-map').find('.state'));
+        stateColors = paintStates($('.us-map').find('.state'));
     }, 100);
     
 
@@ -291,7 +296,7 @@ $(function () {
             rotate: stateData[state].rotate
         }
 
-        var projection = d3.geo.albers()
+        var projection = d3.geo.albersUsa()
 			.scale(data.scale)
 			.translate(data.translate);
         
@@ -311,6 +316,8 @@ $(function () {
         
         svg.call(zoom);
         
+        
+        
         d3.json("/js/" + data.fileName, function (error, topology) {
             if (error) {
                 throw error;
@@ -328,6 +335,8 @@ $(function () {
                 return data.rotate;
             });
         });
+        
+        svg.append("circle").attr("r", 5).attr("transform", function () { return "translate(" + projection([33, 86]) + ")"; });
 
         window.setTimeout(function () {
             var counties = $('.county');
@@ -356,7 +365,12 @@ $(function () {
     });
 
     socket.on('tweet', function (data) {
-        var primaryKey = null;
+        var keys = [];
+        for (key in data.keys) {
+            keys.push(key);
+            break;
+        }
+        var primaryKey = keys[0];
         for (key in data.keys) {
             var trackContainer = document.getElementById(key);
             if (trackContainer != null) {
@@ -369,6 +383,11 @@ $(function () {
             var stateContainer = document.getElementsByClassName(key)[0];
             if (stateContainer != undefined) {
                 
+                stateContainer.style.fill = 'rgb(' + colors[primaryKey].r + ',' + colors[primaryKey].g + ',' + colors[primaryKey].b + ')';
+                /*window.setTimeout(function (stateContainer) {
+                    var state = stateContainer.getAttribute('state-name');
+                    stateContainer.style.fill = '#2e3135';
+                }, 600, stateContainer);*/ 
             }   
         }
         
