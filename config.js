@@ -1,5 +1,7 @@
 var config = {};
 
+process.stdin.setEncoding('utf8');
+
 config.mongoUri = 'mongodb://localhost:27017/twitter';
 module.exports = config;
 

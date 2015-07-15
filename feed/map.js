@@ -7,6 +7,4 @@
     for (key in tweet.keys) {
         locationPackage.keys.push(key);
     }
-
-    console.log(locationPackage);
 };
