@@ -112,54 +112,6 @@ $(function () {
         return trackColors;
     }
     
-    
-    
-    /*var trackColors = {};
-    function generateTrackColors(data) {
-        var start = {
-            red: 255,
-            green: 81,
-            blue: 47
-        }
-        
-        var end = {
-            red: 221,
-            green: 36,
-            blue: 118
-        }
-        
-        var diff = {
-            red: end.red - start.red,
-            green: end.green - start.green,
-            blue: end.blue - start.blue
-        }
-        
-        var colors = {}
-        
-        var length = 0;
-        for (key in data.tracks) {
-            length++;
-        }
-        
-        var count = 0;
-        for (key in data.tracks) {
-            if (count == 0) {
-                colors[key] = start;
-            } else if (count == length - 1) {
-                colors[key] = end;
-            } else {
-                colors[key] = {
-                    red: Math.round((count / length) * diff.red + start.red),
-                    green: Math.round((count / length) * diff.green + start.green),
-                    blue: Math.round((count / length) * diff.blue + start.blue)
-                };
-            }
-            count++;
-        }
-        
-        return colors;
-    }*/
-    
     window.setTimeout(function () {
         stateColors = paintStates($('.us-map').find('.state'));
     }, 100);

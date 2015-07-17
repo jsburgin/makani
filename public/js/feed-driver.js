@@ -5,9 +5,57 @@ $(function () {
     var runTweetFeeder = true;
     var removeFilter = false;
     var userIdent = $('.user-info').html();
+    var colors = null;
     $('.user-info').remove();
     
     
+    function getTrackStatistics() {
+        socket.emit('getTpm', incomingSelector);
+
+        if (incomingSelector != 'all') {
+            socket.emit('getPercentageValues', incomingSelector);
+        } else {
+            updateTweetPercentages(1, 1);
+        }
+
+        setTimeout(getTrackStatistics, 10000);
+    }
+    
+    getTrackStatistics();
+    
+    function updateTweetsPerMinute(tpmValue, track) {
+        var total = 0;
+        
+        for (var i = 0; i < tpmValue.length - 1; i++) {
+            total += tpmValue[i].number;
+        }
+        
+        if (tpmValue.length > 0) {
+            var tpm = Math.round(total / (tpmValue.length - 1));
+            
+            if (incomingSelector == track) {
+                $('#tpm').html(tpm);
+
+                if (incomingSelector == 'all') {
+                    $('#tpm-text').html('tweets per minute');
+                } else {
+                    $('#tpm-text').html(track + ' tweets per minute');
+                }
+                
+            }
+
+        }
+
+    }
+    
+    function updateTweetPercentages(trackValue, totalValue) {
+        var percentage = trackValue / totalValue * 100;
+        $('#percentage').html(percentage.toFixed(2) + '%');
+    }
+    
+    socket.on('tpm', updateTweetsPerMinute);
+    socket.on('updatePercentages', updateTweetPercentages);
+
     socket.emit('connected', userIdent);
 
     $('.toggle-incoming-button').click(function () {
@@ -29,6 +77,7 @@ $(function () {
         for (var key in data.tracks) {
             $('.track-heatmap .heat-container').append('<div class="col-xs-6 col-sm-4 col-md-2 heatmap-entry" id="' + key + '" track-count="' + data.tracks[key] + '"><span class="remove-filter glyphicon glyphicon-remove-circle"></span> ' + key + ': ' + data.tracks[key].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + '</div>');
         }
+        colors = gradientGenerator(data);
     });
     
     $('body').on('click', '.remove-filter', function () {
@@ -45,19 +94,23 @@ $(function () {
 
     $('body').on('click', '.heatmap-entry', function (event) {
         // check to see if element has been removed
-        if(!removeFilter) {
+        if (!removeFilter) {
             $('#' + incomingSelector).css('text-decoration', 'none');
             if (incomingSelector == event.currentTarget.id) {
                 incomingSelector = 'all';
                 $('.income-tweet-text').html(incomingSelector);
                 $('.income-tweet-container div').remove();
+                updateTweetPercentages(1, 1);
             } else {
                 incomingSelector = event.currentTarget.id;
                 $('#' + event.currentTarget.id).css('text-decoration', 'underline');
                 $('.income-tweet-text').html(event.target.id);
                 $('.income-tweet-container div').remove();
                 socket.emit('getcache', event.currentTarget.id);
-            } 
+                socket.emit('getPercentageValues', incomingSelector);
+            }
+            socket.emit('getTpm', incomingSelector);
+             
         }
         removeFilter = false;
     });
@@ -97,9 +150,10 @@ $(function () {
             if (trackContainer != null) {
                 trackContainer.innerHTML = '<span class="remove-filter glyphicon glyphicon-remove-circle"></span> ' + key + ': ' + data.keys[key].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
                 trackContainer.setAttribute('track-count', data.keys[key]);
-                trackContainer.classList.remove('highlight');
-                trackContainer.focus();
-                trackContainer.classList.add('highlight');
+                trackContainer.style.background = 'rgb(' + colors[key].r + ',' + colors[key].g + ',' + colors[key].b + ')';
+                window.setTimeout(function (trackContainer) {
+                    trackContainer.style.background = '#2e3135';
+                }, 250, trackContainer);
   
                 if ($('.track-heatmap .heat-container').find(trackContainer).length) {
                     sortTracks(Number(trackContainer.getAttribute('track-count')), '.track-heatmap .heat-container', trackContainer);

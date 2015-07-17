@@ -13,7 +13,7 @@ var Twit = require('twit'),
 require('dotenv').load();
 
 module.exports = function (io) {
-
+    
     var client = new Twit({
         consumer_key: process.env.CONSUMER_KEY,
         consumer_secret: process.env.CONSUMER_SECRET,
@@ -27,7 +27,9 @@ module.exports = function (io) {
         tweetCaches = {},
         filterUsers = {},
         trackCountPairs = {
-            tracks: {}
+            tracks: {},
+            tpm: {},
+            total: 0
         },
         locationCounts = {},
         startingDate = null;
@@ -38,45 +40,70 @@ module.exports = function (io) {
             console.log(err);
             process.exit(1);
         }
+        startingDate = date;
     });
     
     locationService.getAllLocations(function (err, allLocations) {
-
+        
         if (err) {
             console.log(err);
             process.exit(1);
         }
-
+        
         for (var i = 0; i < allLocations.length; i++) {
             locations.push(allLocations[i].name);
             locationCounts[allLocations[i].name] = allLocations[i].tracks;
         }
 
     });
-
+    
     var stream = null;
+    
+    countService.addCount({ track: 'all', type: -1 }, function (err) {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log('added all count');
+        }
+    });
+    
+    function saveTotalCount() {
+        console.log(trackCountPairs.total);
+        countService.changeCountValue('all', trackCountPairs.total, function (err) {
+            if (err) {
+                console.log(err);
+            }
+        });
 
+        setTimeout(saveTotalCount, 20000);
+    }
+    
     async.waterfall([
         function (cb) {
-            countService.getCountsOfType([0, 1, 2], cb);
+            countService.getCountsOfType([-1, 0, 1, 2], cb);
         },
         function (counts, cb) {
-            
             for (var i = 0; i < counts.length; i++) {
                 var count = counts[i];
                 
-            
+                trackCountPairs.tpm[count.track] = [{ number: 0 }];
+
                 tweetCaches[count.track] = [];
                 trackCountPairs.tracks[count.track] = count.value;
                 
                 if (count.type == 0) {
                     primaryTracks.push(count.track);
+                } else if (count.type == -1) {
+                    trackCountPairs.total = count.value;
                 } else {
                     filterUsers[count.track] = count.users;
                     filters.push(count.track);
                 }
             }
             
+            trackCountPairs.tpm['all'] = [{ number: 0 }];
+            console.log(trackCountPairs.total);
+
             cb(null);
         },
         function (cb) {
@@ -84,12 +111,34 @@ module.exports = function (io) {
             stream.on('tweet', function (tweet) {
                 processTweet(tweet);
             });
-        },
-        function (err) {
+            setTimeout(refreshTweetPerMinutes, 60000);
+            saveTotalCount();
+        }
+    ], function (err) {
+        if (err) {
             console.log(err);
             process.exit(1);
         }
-    ]);
+    });
+    
+    function refreshTweetPerMinutes() {
+        for (key in trackCountPairs.tpm) {
+            var tpmValue = trackCountPairs.tpm[key];
+            
+            if (tpmValue.length > 10) {
+                tpmValue.splice(0, 1);
+            }
+            
+            tpmValue.push({ number: 0 });
+        }
+
+        setTimeout(refreshTweetPerMinutes, 60000);
+    }
+    
+    function updateTweetsPerMinute(track) {
+        var tpmValue = trackCountPairs.tpm[track];
+        tpmValue[tpmValue.length - 1].number++;
+    }
     
     function processTweet(tweet) {
         async.waterfall([
@@ -101,31 +150,44 @@ module.exports = function (io) {
                     location: tweet.user.location,
                     text: tweet.text,
                     url: 'http://twitter.com/' + tweet.user.id_str + '/status/' + tweet.id_str,
-                    userId: tweet.user.id_str  
+                    userId: tweet.user.id_str
                 }
                 
                 var text = tweetPackage.text.toLowerCase();
-
+                
+                trackCountPairs.total++;
+                updateTweetsPerMinute('all');
+                
+                // search through primary tracks
                 for (var i = 0; i < primaryTracks.length; i++) {
                     var track = primaryTracks[i];
-
+                    
                     if (text.indexOf(track) != -1) {
                         tweetPackage.keys[track] = ++trackCountPairs.tracks[track];
+                        updateTweetsPerMinute(track);
                     }
                 }
-
+                
+                // search through filters & locations
+                for (var i = 0; i < filters.length; i++) {
+                    var filter = filters[i];
+                    
+                    if (text.indexOf(filter) != -1) {
+                        tweetPackage.keys[filter] = ++trackCountPairs.tracks[filter];
+                    }
+                }
+                
                 cb(null, tweetPackage);
             },
             function (tweetPackage, cb) {
                 emitTweet(tweetPackage, cb);
-            },
-            function (err) {
-                if (err) {
-                    console.log(err);
-                    process.exit(1);
-                }
             }
-        ]);
+        ], function (err) {
+            if (err) {
+                console.log(err);
+                process.exit(1);
+            }
+        });
     }
     
     function emitTweet(tweetPackage) {
@@ -153,9 +215,9 @@ module.exports = function (io) {
             });
         }
     }
-
+    
     devUtility(stream);
-        
+    
     io.on('connection', function (socket) {
         
         // generate original list of tracks to send to client
@@ -163,18 +225,19 @@ module.exports = function (io) {
             baseTracksToSend = {
                 tracks: {}
             };
-
+        
         for (var i = 0; i < primaryTracks.length; i++) {
             baseTracksToSend.tracks[primaryTracks[i]] = trackCountPairs.tracks[primaryTracks[i]];
         }
         
-        
-
         socket.emit('initialData', baseTracksToSend);
+        
         socket.emit('startsim', startingDate);
-            
+        
+        socket.emit('tpm', trackCountPairs.tpm['all'], 'all');
+        
         var filters = [];
-
+        
         socket.on('connected', function (userID) {
             userEmail = userID;
             userService.getUserFilters(userID, function (err, userFilters) {
@@ -188,9 +251,17 @@ module.exports = function (io) {
                 }
             });
         });
-            
+        
+        socket.on('getTpm', function (track) {
+            socket.emit('tpm', trackCountPairs.tpm[track], track);
+        });
+        
+        socket.on('getPercentageValues', function (track) {
+            socket.emit('updatePercentages', trackCountPairs.tracks[track], trackCountPairs.total);
+        });
+        
         socket.on('addfilter', function (filterData) {
-
+            
             filterData.track = filterData.track.toLowerCase();
             if (primaryTracks.indexOf(filterData.track) == -1 && filters.indexOf(filterData.track) == -1) {
                 var newFilter = filterData.track;
@@ -203,13 +274,13 @@ module.exports = function (io) {
                     trackCountPairs.tracks[newFilter] = 0;
                     tweetCaches[newFilter] = [];
                 }
-                    
+                
                 countService.addCount({ track: newFilter, type: 2 }, function (err) {
                     if (err) {
                         console.log(err);
                     }
                 });
-                    
+                
                 userService.addFilter(filterData, function (err) {
                     if (err) {
                         console.log(err);
@@ -223,11 +294,11 @@ module.exports = function (io) {
 
             }
         });
-            
+        
         socket.on('getcache', function (trackValue) {
             socket.emit('receivecache', tweetCaches[trackValue]);
         });
-            
+        
         function removeFilter(filter) {
             var localIndex = filters.indexOf(filter);
             filters.splice(localIndex, 1);
@@ -240,14 +311,14 @@ module.exports = function (io) {
                 filterUsers[filter]--;
             }
         }
-            
+        
         socket.on('removesinglefilter', function (filter) {
             // local
             removeFilter(filter);
             // database
             var filterData = {
                 track: filter,
-                userID: userEmail 
+                userID: userEmail
             }
             userService.removeFilter(filterData, function (err) {
                 if (err) {
@@ -259,17 +330,17 @@ module.exports = function (io) {
                     console.log(err);
                     process.exit(1);
                 }
-                    
+                
                 if (filterFault) {
                     console.log('Below zero for non-user created track!');
                 }
             });
         });
-
+        
         socket.on('runSimulation', function (dates) {
             simulator(socket, dates, primaryTracks);
         });
 
     });
-    
-}
+  
+};

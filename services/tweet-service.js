@@ -48,9 +48,9 @@ exports.getTweetsForCache = function (trackValue, next) {
 exports.getTweets = function (start, stop, next) {
     Tweet.find({ 'created': { "$gte": start, "$lt": stop } }, function (err, tweets) {
         if (err) {
-            console.log(err);
+            return next(err, null);
         }
-        next(tweets);
+        next(null, tweets);
     });
 };
 

@@ -22,6 +22,21 @@
     }
 }
 
+.statbox {
+    margin-top: 20px;
+    background: #2e3135;
+    padding: 10px;
+    border: 1px solid #22252a;
+    display: block;
+    text-align: center;  
+}
+
+.statbox .statbox-num {
+    
+    
+    font-size: 25px;
+}
+
 .county-name {
     height: 16px;
 }
@@ -73,7 +88,7 @@ body {
 }
 
 .track-percent-stats, .track-heatmap, .incoming-tweets, .update-tracks {
-	margin-top: 30px;
+	margin-top: 20px;
 }
 
 .percent-stat-box {

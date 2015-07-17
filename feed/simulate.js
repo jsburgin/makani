@@ -1,4 +1,5 @@
-var tweetService = require('../services/tweet-service');
+var tweetService = require('../services/tweet-service'),
+    async = require('async');
 
 module.exports = function(socket, dates, originalTrackList) {
     var startTime = new Date(dates.start),
@@ -21,73 +22,81 @@ module.exports = function(socket, dates, originalTrackList) {
 
     // send initial data
     socket.emit('simInit', trackCounts);
+    
+    function addMinute(time) {
+        return new Date(time.getTime() + 60000);
+    }
 
-    // once initial tweets are grabbed call getData to emit current data and query for next minute
-    tweetService.getTweets(startTime, new Date(startTime.getTime() + 60000), function (initialData) {
-        
-        var runWithNoData = false;
-
-        function sendData(data, next, cbObj) {
-            var tweetCount = 0,
-                lastTweetTime = 0;
-            function emitTweet(tweetCount) {
-                var tweetPackage = {
-                    text: data[tweetCount].text,
-                    author: data[tweetCount].userName,
-                    created: data[tweetCount].created,
-                    url: 'http://twitter.com/' + data[tweetCount].userId + '/status/' + data[tweetCount].tweetId,
-                    keys: {}
-                }
-                for (var i = 0; i < data[tweetCount].keys.length; i++) {
-                    var currentTrack = data[tweetCount].keys[i].track;
-                    tweetPackage.keys[currentTrack] = ++trackCounts.tracks[currentTrack];
-                    if (i == data[tweetCount].keys.length - 1) {
-                        socket.emit('simTweet', tweetPackage);
-                    }
-                }
-                lastTweetTime = data[tweetCount].created;
-                // update index
-                tweetCount++;
-                if (tweetCount < data.length) {
-                    setTimeout(emitTweet, rate * Math.abs(data[tweetCount].created - lastTweetTime), tweetCount);
-                } else {
-                    next(cbObj);
-                }
-            }
-
-            if (data.length > 0) {
-                emitTweet(tweetCount);
-            } else {
-                next(cbObj);
-            }
+    tweetService.getTweets(startTime, addMinute(startTime), function (err, tweets) {
+        if (err) {
+            console.log(err);
+            process.exit(1);
         }
-        
-        function getData(currentMinute, tweetsToEmit) {
-            function finishedSendingToClient(obj) {
-                if (currentMinute < endTime) {
-                    if (obj.data.length == 0 && !runWithNoData) {
-                        setTimeout(finishedSendingToClient, 0, obj);
-                    } else {
-                        runWithNoData = false;
-                        setTimeout(getData, 0, new Date(currentMinute.getTime() + 60000), obj.data);
-                    }
-                }
-            }
-
-            var nextTweetSet = {
-                data: []
-            };
-
-            tweetService.getTweets(currentMinute, new Date(currentMinute.getTime() + 60000), function (tweets) {
-                if (tweets.length == 0) {
-                    runWithNoData = true;
-                }
-                nextTweetSet.data = tweets;
-            });
-
-            setTimeout(sendData, 0, tweetsToEmit, finishedSendingToClient, nextTweetSet);
-        }
-
-        getData(new Date(startTime.getTime() + 60000), initialData);
+        simulate(tweets, addMinute(startTime));
     });
+
+    function simulate(tweets, startTime) {
+        async.parallel([
+            function (cb) {
+                tweetService.getTweets(startTime , addMinute(startTime), cb);
+            },
+            function (cb) {
+                emitTweets(tweets, cb);
+            }
+        ], function (err, simulateData) {
+            console.log(simulateData[0].length);
+
+            if (addMinute(startTime) < endTime) {
+                setTimeout(simulate, 0, simulateData[0], addMinute(startTime));
+            } else {
+                emitTweets(simulateData[0], function (err) {
+                    if (err) {
+                        console.log(err);
+                    }
+                    console.log("done");
+                });
+            }
+
+        });
+    }
+
+    function emitTweets(tweets, cb) {
+        var previousTweetTime = 0;
+
+        function emitTweet(tweetIndex) {
+            var tweet = tweets[tweetIndex];
+            
+            var tweetPackage = {
+                author: tweet.userName,
+                created: tweet.created,
+                keys: {},
+                text: tweet.text,
+                url: 'http://twitter.com/' + tweet.userId + '/status/' + tweet.tweetId
+            }
+
+            for (var i = 0; i < tweet.keys.length; i++) {
+                var key = tweet.keys[i].track;
+                tweetPackage.keys[key] = ++trackCounts.tracks[key];
+            }
+
+            socket.emit('simTweet', tweetPackage);
+            lastTweetTime = tweet.created;
+            tweetIndex++;
+
+            if (tweetIndex < tweets.length) {
+                setTimeout(emitTweet, rate * Math.abs(tweets[tweetIndex].created - lastTweetTime), tweetIndex);
+            } else {
+                cb(null);
+            }  
+        }
+
+        
+        if (tweets.length > 0) {
+            emitTweet(0);
+        } else {
+            cb(null);
+        }
+
+    }
+
 }

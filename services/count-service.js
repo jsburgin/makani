@@ -13,6 +13,19 @@ exports.updateCount = function (trackValue, next) {
     });
 };
 
+exports.changeCountValue = function (trackValue, newCount, next) {
+    Count.findOne({ track: trackValue }, function (err, count) {
+        count.value = newCount;
+        
+        count.save(function (err) {
+            if (err) {
+                return next(err);
+            }
+            next(null);
+        });
+    });
+}
+
 exports.reset = function (next) {
     Count.find({}, function (err, counts) {
         if (err) {
