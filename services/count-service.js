@@ -84,7 +84,7 @@ exports.addCount = function (trackValue, next) {
                     return next(err);
                 }
                 next(null);
-            })
+            });
         }
     });  
 };

@@ -1,47 +1,24 @@
-<div class="update-tracks row">
-    <div class="title-box">
-        <h4>Add Filters</h4>
-    </div>
-    <form class="add-filter form-inline" role="form">
-        <input type="text" class="new-track form-control" placeholder="New track..." />
-        <input type="submit" class="update-track-button btn btn-default" value="Add & Refresh Server"></input>
-    </form>
-    <div id="filter-map" class="filter-heatmap">
-        <div class="heat-container">
-            <!-- added filters heatmap content -->
-        </div>
-        <svg class="filter-chart data-chart">
+<div class="large-24 columns makani-track-tickers row">
 
-        </svg>
-    </div>
-</div>
-<div class="track-heatmap row">
-    <div class="title-box">
-        <h4>Tracks</h4>
-    </div>
-    <div class="heat-container">
-        <!-- heatmap content -->
-    </div>
-    <svg class="track-chart data-chart">
-
-    </svg>
 </div>
 
 <div class="track-statistics row">
-    <div class="statbox col-sm-3"><span id="tpm" class="statbox-num">0</span><br /><span id="tpm-text">tweets per minute</span></div>
-    <div class="statbox col-sm-3"><span id="percentage" class="statbox-num">0%</span><br /><span id="percentage-text">of all tweets</span></div>
-    <div class="statbox col-sm-3"></div>
-    <div class="statbox col-sm-3"></div>
+    <div class="statbox large-6 columns"><span id="tpm" class="statbox-num">0</span><br /><span id="tpm-text">tweets per minute</span></div>
+    <div class="statbox large-6 columns"><span id="percentage" class="statbox-num">0%</span><br /><span id="percentage-text">of all tweets</span></div>
+    <div class="statbox large-6 columns">data</div>
+    <div class="statbox large-6 columns">data</div>
 </div>
 
-<div class="incoming-tweets row">
-    <div class="title-box">
-        <h4 class="toggle-incoming">Incoming Tweets &middot; <span class="toggle-incoming-button glyphicon glyphicon-pause"></span>
-         <span class="reset-tracks">Show All</span>
-        </h4>
-        <h4 class="showing-tracks">Currently Showing: <span class="income-tweet-text"></span></h4>
+<div class="incoming-tweets">
+    <div class="small-24 columns">
+        <div class="title-box">
+            <h5 class="toggle-incoming showing-tracks">
+                Incoming Tweets &middot; <span class="toggle-incoming-button entypo-pause"></span> &middot; Currently Showing: <span class="income-tweet-text"></span>
+            </h5>
+        </div>
+        <div class="income-tweet-container"></div>
     </div>
-    <div class="income-tweet-container"></div>
+    
 </div>
 <div class="user-info">{{email}}</div>
 

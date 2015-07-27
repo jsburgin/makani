@@ -75,7 +75,7 @@ $(function () {
     socket.on('initialData', function (data) {
         $('.track-heatmap .heat-container').html('');
         for (var key in data.tracks) {
-            $('.track-heatmap .heat-container').append('<div class="col-xs-6 col-sm-4 col-md-2 heatmap-entry" id="' + key + '" track-count="' + data.tracks[key] + '"><span class="remove-filter glyphicon glyphicon-remove-circle"></span> ' + key + ': ' + data.tracks[key].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + '</div>');
+            $('.makani-track-tickers').append('<div class="small-12 medium-8 large-4 columns track-ticker-listing" id="' + key + '" track-count="' + data.tracks[key] + '"><span class="remove-filter glyphicon glyphicon-remove-circle"></span> ' + key + ': ' + data.tracks[key].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + '</div>');
         }
         colors = gradientGenerator(data);
     });
@@ -92,7 +92,7 @@ $(function () {
         removeFilter = true;
     });
 
-    $('body').on('click', '.heatmap-entry', function (event) {
+    $('body').on('click', '.track-ticker-listing', function (event) {
         // check to see if element has been removed
         if (!removeFilter) {
             $('#' + incomingSelector).css('text-decoration', 'none');
@@ -152,7 +152,7 @@ $(function () {
                 trackContainer.setAttribute('track-count', data.keys[key]);
                 trackContainer.style.background = 'rgb(' + colors[key].r + ',' + colors[key].g + ',' + colors[key].b + ')';
                 window.setTimeout(function (trackContainer) {
-                    trackContainer.style.background = '#2e3135';
+                    trackContainer.style.background = 'rgb(50, 53, 64)';
                 }, 250, trackContainer);
   
                 if ($('.track-heatmap .heat-container').find(trackContainer).length) {
@@ -168,7 +168,7 @@ $(function () {
             if (totalTweets >= 10) {
                 $('.income-tweet-container div:last-child').remove();
             };
-            $('.income-tweet-container').prepend('<div><a target="_blank" href="' + data.url + '">@' + data.author + ': ' + data.text + '</a></div>');
+            $('.income-tweet-container').prepend('<div class="printed-tweet"><a target="_blank" href="' + data.url + '"><span class="tweet-author">@' + data.author + '</span>: ' + data.text + '</a></div>');
         }
         
     });

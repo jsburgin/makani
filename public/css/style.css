@@ -1,309 +1,146 @@
-@-webkit-keyframes yellow-fade {
-    0% {
-        background: #37bb98;
-        fill: #37bb98;
+@import url(http://fonts.googleapis.com/css?family=Oswald);
+@import url(http://weloveiconfonts.com/api/?family=entypo);
+
+/* entypo */
+[class*="entypo-"]:before {
+  font-family: 'entypo', sans-serif;
+}
+
+
+@media only screen { 
+	body {
+		background: rgb(26, 29, 37);
+		font-family: 'Tahoma';
+	}
+
+	.makani-container {
+		width: 100%;
+		max-width: none !important;
+		padding: 0 !important;
+		position: relative !important;
+	}
+
+	.no-padding {
+		padding: 0 !important;
+	}
+
+	/* Primary Side Navigation Bar */
+
+	.makani-primary-nav {
+		background: rgb(12, 14, 18);
+		float: none;
+		height: 100%;
+		display: none;
+		position: fixed;
+	}
+
+	.makani-primary-nav .side-nav {
+		padding: 0;
+		margin-top: 15px;
+	}
+
+	.makani-primary-nav .side-nav li {
+		margin: 0;
+	}
+
+	.makani-primary-nav .side-nav li a, .makani-primary-nav .side-nav li a:visited {
+		color: rgb(118, 125, 137);
+		transition: .3s;
+		-webkit-transition: .3s;
+		border-left: 4px solid rgb(12, 14, 18);
+	}
+
+	.makani-primary-nav .side-nav li a:hover {
+		color: white;
+		background: rgb(10, 12, 14);
+		border-left: 4px solid rgb(68, 188, 238);
+	}
+
+	.makani-branding-box {
+		/*background: rgba(68, 188, 238, .8);*/
+		margin: 0;
+		padding: 12px 0 16px;
+		background: rgb(10, 12, 18);
+	}
+
+	.makani-branding-box h2 {
+		color: rgba(255, 255, 255, 1);
+		margin: 0 0 0 22%;
+		font-family: 'Oswald';
+		text-transform: lowercase;
+	}
+
+	.makani-branding-box p {
+		color: rgba(255, 255, 255, 1);
+		margin: -3px 0 0 24%;
+		font-size: 13px;
+		
+		letter-spacing: .02rem;
+	}
+
+	
+
+	.makani-content {
+		margin: 1.277em 0;
+		padding: 0 .9375em;
+	}
+
+	.track-ticker-listing {
+		background: rgb(50, 53, 64);
+		border: 1px solid rgb(26, 29, 37);
+        cursor: pointer;
+		font-size: 13px;
+		padding: 8px 0;
+		text-align: center; 
+        transition: background .5s;
+        -webkit-transition: background .5s;
+	}
+    .statbox {
+        background: rgb(50, 53, 64);
+        border: 1px solid rgb(26, 29, 37);
+        margin-top: 15px;
+        padding: 15px 0;
+        text-align: center; 
     }
-    100% {
-        background: #2e3135;
+
+    .incoming-tweets a {
         color: #fff;
-        fill: #2e3135;  
+    }
+
+    .incoming-tweets a:hover {
+        text-decoration: underline;
+    }
+
+    .toggle-incoming-button {
+        cursor: pointer;
+    }
+
+    .incoming-tweets {
+        background: rgb(50, 53, 64);
+        border: 1px solid rgb(26, 29, 37);
+        margin-top: 15px;
+        padding: 5px 10px;
+        overflow: auto;
+    }
+    .incoming-tweets h5 {
+        padding-bottom: 5px;
+        border-bottom: 1px solid white;
+    }
+    .printed-tweet {
+        font-size: 15px;
+        margin-bottom: 3px;
+    }
+    .tweet-author {
+        color: rgb(255, 81, 47);
     }
 }
 
-@keyframes yellow-fade {
-    0% {
-        background: #37bb98;
-        fill: #37bb98;
-    }
-    100% {
-        background: #2e3135;
-        color: #fff;
-        fill: #2e3135; 
-    }
-}
+@media only screen and (min-width: 64.063em) {
+	.makani-primary-nav {
+		display: block;
+	}
 
-.statbox {
-    margin-top: 20px;
-    background: #2e3135;
-    padding: 10px;
-    border: 1px solid #22252a;
-    display: block;
-    text-align: center;  
-}
-
-.statbox .statbox-num {
-    
-    
-    font-size: 25px;
-}
-
-.county-name {
-    height: 16px;
-}
-
-path {
-    fill: #2e3135;
-    stroke: #181A1C;
-    //stroke-width: .6;
-    -webkit-transition: fill .5s;
-    transition: fill .5s;
-}
-
-path:hover {
-    cursor: pointer;
-}
-
-a.revert-map {
-    color: #37bb98;
-    display: block;
-    margin: 30px 0 20px;
-}
-
-.highlight {
-    animation: yellow-fade 0.5s ease-in 1;
-    -webkit-animation: yellow-fade 0.5s ease-in 1;
-}
-
-.highlight-map {
-    animation: yellow-fade 1s ease-in 1;
-    -webkit-animation: yellow-fade 1s ease-in 1;
-}
-
-body {
-    color: #fff !important;
-    background: #181A1C;
-    padding-bottom: 40px;
-}
-
-::-webkit-scrollbar {
-    display: none;
-}
-
-.sim-map {
-    margin-top: 30px !important;
-}
-
-.track-percent-stats h5 {
-	text-align: center;
-}
-
-.track-percent-stats, .track-heatmap, .incoming-tweets, .update-tracks {
-	margin-top: 20px;
-}
-
-.percent-stat-box {
-	background: #eee;
-	border-left: 2px solid #fff;
-	border-right: 2px solid #fff;
-}
-
-.heatmap-entry {
-	background: #2e3135;
-	border: 1px solid #22252a;
-	cursor: pointer;
-	padding: 10px;
-    text-align: center;
-    transition: background .5s;
-    -webkit-transition: background .5s;
-}
-
-.income-tweet-container div {
-    margin-top: 8px;
-    margin-bottom: 3px;
-    overflow-x: hidden !important;
-}
-
-.toggle-incoming {
-    float: left;
-}
-
-.showing-tracks {
-    clear: none;
-    float: right;
-}
-
-.income-tweet-container {
-    clear: both;
-}
-
-.toggle-incoming-button {
-    cursor: pointer;
-}
-
-.title-box {
-    border-bottom: 1px solid #393B47;
-    margin-bottom: 14px;
-}
-
-.incoming-tweets .title-box {
-    overflow: auto;
-}
-
-.incoming-tweets div a {
-    color: #fff;
-}
-
-
-/*input[type="button" i], input[type="submit" i], input[type="reset" i], input[type="file" i]::-webkit-file-upload-button, button {
-    background-color: #393939 !important;
-} */
-
-.filter-heatmap {
-    margin-top: 14px;
-}
-
-.login-form {
-    margin-top: 80px;
-    background: #2e3135;
-    padding: 15px;
-}
-
-input.new-track, .login-form input.form-control {
-    background: #25282c;
-    border: 1px solid #191a1b;
-
-    border-radius: 0px;
-    -khtml-border-radius: 0px;
-    -moz-border-radius: 0px;
-    -webkit-border-radius: 0px;
-}
-
-.login-form input {
-    margin-bottom: 15px;
-}
-
-
-a.create-account-button {
-    display: block;
-    margin: 15px auto;
-    text-align: center;
-    color: #fff;
-}
-
-.update-track-button, .login-button, .sim-button {
-    background: #393939 !important;
-    color: #fff;
-    margin-left: 10px;
-    border: none;
-    border-radius: 2px;
-    -khtml-border-radius: 2px;
-    -moz-border-radius: 2px;
-    -webkit-border-radius: 2px;
-    
-}
-
-.login-button {
-    margin: 0 auto;
-    display: block;
-    text-align: center;
-}
-
-.update-track-button:focus, .login-button:focus, .sim-button:focus {
-    color: #fff;
-    outline: none !important;
-}
-
-.update-track-button:hover, .login-button:hover, .sim-button:hover {
-    background: #404040 !important;
-    color: #fff;
-}
-
-.data-chart {
-    margin-top: 15px;
-    display: none;
-}
-
-.data-chart rect {
-    fill: #37bb98;
-}
-
-.data-chart text {
-    fill: white;
-    font: 10px sans-serif;
-    text-anchor: end;
-}
-
-.incoming-tweets {
-    background: #2e3135;
-    padding: 2px 20px 10px;
-}
-
-.heat-container {
-    width: 100%;
-    overflow: auto;
-}
-
-#statesvg {
-    margin: 0 auto;
-
-}
-
-.state {
-    fill: #2e3135;
-    stroke: #181A1C;
-    stroke-width: 1.2;
-}
-
-.state:hover {
-    cursor: pointer;
-    opacity: .8;
-}
-
-.mapcenter {
-    width: 960px;
-    margin: 0 auto;
-}
-
-.us-map {
-    width: 100%;
-    margin: 0 auto;
-    border: 1px solid #2e3135;
-}
-
-.new-track.form-control {
-    color: #fff !important;
-
-}
-
-.remove-filter {
-    font-size: 12px;
-    display: inline-block;
-}
-
-.track-heatmap .remove-filter {
-    display: none !important;
-}
-
-.axis text {
-    font: 10px;
-}
-
-.axis path, .axis line {
-    fill: none;
-    stroke: #fff;
-    shape-rendering: crispEdges;
-}
-
-.user-box {
-    display: none;
-    margin-top: 15px;
-    float: right;
-}
-
-.user-box a {
-    color: #37bb98;
-}
-
-.time-form {
-    display: block;
-    overflow: auto;
-}
-
-.time-form input {
-    margin-bottom: 15px;
-}
-
-.reset-tracks:hover {
-    cursor: pointer;
-    text-decoration: underline;
+	.track-ticker-listing {
+		font-size: 14px;
+	}
 }

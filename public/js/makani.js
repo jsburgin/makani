@@ -52,7 +52,7 @@ function gradientGenerator(data) {
         }
     }
     
-    trackColors = {}
+    trackColors = {};
     
     trackColors[groups[0][0]] = colorStops[0][0];
     for (var i = 0; i < groups.length; i++) {
