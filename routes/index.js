@@ -3,7 +3,6 @@ var router = express.Router();
 var restrict = require('../auth/restrict');
 var userService = require('../services/user-service');
 
-/* GET home page. */
 router.get('/', restrict, function (req, res, next) {
     var vm = {
         title: 'Primary Feed',

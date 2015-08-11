@@ -79,6 +79,32 @@ exports.addFilter = function (filterData, next) {
     });
 };
 
+exports.updateUser = function (id, name, email, password, next) {
+    User.findById(id, function (err, user) {
+        if (name) {
+            user.name = name;
+        }
+
+        if (email) {
+            user.email = email;
+        }
+
+        if (password) {
+            password = bcrypt.hashSync(password, 10);
+            user.password = password;
+        }
+
+        user.save(function (err) {
+            if (err) {
+                return next(err);
+            }
+
+            next(null);
+        });
+
+    });
+}
+
 exports.removeFilter = function (filterData, next) {
     User.findOne({ email: filterData.userID }, function (err, user) {
         if (err) {

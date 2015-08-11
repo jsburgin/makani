@@ -7,6 +7,10 @@ $(function () {
     var userIdent = $('.user-info').html();
     var colors = null;
     $('.user-info').remove();
+    var graphAdding = false;
+    
+    var graphTracks = [];
+    var graphData = null;
     
     
     function getTrackStatistics() {
@@ -26,18 +30,30 @@ $(function () {
     function updateTweetsPerMinute(tpmValue, track) {
         var total = 0;
         
+        graphData = [];
+        
         for (var i = 0; i < tpmValue.length - 1; i++) {
             total += tpmValue[i].number;
+            var currentTime = new Date(tpmValue[i].time);
+            graphData.push({
+                number: tpmValue[i].number,
+                time: currentTime.toLocaleTimeString()
+            });
         }
         
+        graphTpm(graphData);
+
         if (tpmValue.length > 0) {
             var tpm = Math.round(total / (tpmValue.length - 1));
             
             if (incomingSelector == track) {
-                $('#tpm').html(tpm);
+                if (tpm.toString()) {
+                    $('#tpm').html(tpm.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
+                }
+                
 
                 if (incomingSelector == 'all') {
-                    $('#tpm-text').html('tweets per minute');
+                    $('#tpm-text').html('average tweets per minute');
                 } else {
                     $('#tpm-text').html(track + ' tweets per minute');
                 }
@@ -51,6 +67,82 @@ $(function () {
     function updateTweetPercentages(trackValue, totalValue) {
         var percentage = trackValue / totalValue * 100;
         $('#percentage').html(percentage.toFixed(2) + '%');
+    }
+    
+    function graphTpm(data) {
+        
+        var widthToUse = $('.tpm-graph').width();
+        widthToUse = widthToUse * .99;
+        var margin = { top: 20, right: 20, bottom: 30, left: 50 },
+            width = widthToUse - margin.left - margin.right,
+            height = 300 - margin.top - margin.bottom;
+
+        var parseDate = d3.time.format("%X %p").parse;
+
+        var x = d3.time.scale()
+            .range([0, width]);
+
+        var y = d3.scale.linear()
+            .range([height, 0]);
+
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom")
+            .innerTickSize(-height)
+            .outerTickSize(0)
+            .tickPadding(3);
+
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left")
+            .innerTickSize(-width)
+            .outerTickSize(0)
+            .tickPadding(3);
+
+        var line = d3.svg.line()
+            .x(function (d) { return x(d.time) })
+            .y(function (d) { return y(d.number) });
+        
+        $('.tpm-graph').html('');
+
+        var svg = d3.select('.tpm-graph').append('svg')
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        data.forEach(function (d) {
+            d.time = parseDate(d.time);
+            d.number = +d.number;
+        });
+        
+        x.domain(d3.extent(data, function (d) { return d.time; }));
+        y.domain(d3.extent(data, function (d) { return d.number; }));
+        
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
+        
+        svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis)
+            .append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 6)
+            .attr("dy", ".71em");
+        
+        svg.append("path")
+            .datum(data)
+            .attr("class", "line")
+            .attr("d", line);
+
+        if (incomingSelector == 'all') {
+            $('.line').css('stroke', 'rgb(255, 81, 47)');
+        } else {
+            var color = 'rgb(' + colors[incomingSelector].r + ',' + colors[incomingSelector].g + ',' + colors[incomingSelector].b + ')';
+            $('.line').css('stroke', color);
+        }
     }
     
     socket.on('tpm', updateTweetsPerMinute);
@@ -94,7 +186,7 @@ $(function () {
 
     $('body').on('click', '.track-ticker-listing', function (event) {
         // check to see if element has been removed
-        if (!removeFilter) {
+        if (!graphAdding) {
             $('#' + incomingSelector).css('text-decoration', 'none');
             if (incomingSelector == event.currentTarget.id) {
                 incomingSelector = 'all';
@@ -111,8 +203,16 @@ $(function () {
             }
             socket.emit('getTpm', incomingSelector);
              
+        } else {
+            var index = graphTracks.indexOf(event.currentTarget.id);
+            if (index == -1) {
+                graphTracks.push(event.currentTarget.id);
+            } else {
+                graphTracks.splice(index, 1);
+            }
+            
+            console.log(graphTracks);
         }
-        removeFilter = false;
     });
     
     $('.reset-tracks').click(function() {

@@ -3,10 +3,8 @@ var router = express.Router();
 var userService = require('../services/user-service');
 var passport = require('passport');
 
-
-/* GET home page. */
 router.get('/', function (req, res, next) {
-    res.render('login/index', { title: 'Login', originalPage: req.path });
+    res.render('login/index', { title: 'Login', originalPage: req.path, layout: 'login' });
 });
 
 router.post('/', passport.authenticate('local', { failureRedirect: '/login' }), function (req, res, next) {
@@ -17,6 +15,8 @@ router.post('/', passport.authenticate('local', { failureRedirect: '/login' }), 
     } else {
         res.redirect(redirectURL);
     }
+
+
     
 });
 

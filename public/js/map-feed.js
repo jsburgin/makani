@@ -6,8 +6,7 @@ $(function () {
     var runTweetFeeder = true;
     var colors = null;
     var stateColors = null;
-    
-    
+
     function paintStates(tracks) {
         console.log(tracks);
         stateObj = {
@@ -134,9 +133,8 @@ $(function () {
     socket.on('initialData', function (data) {
         $('.track-heatmap .heat-container').html('');
         for (var key in data.tracks) {
-            $('.track-heatmap .heat-container').append('<div class="col-md-2 heatmap-entry" id="' + key + '">' + key + ': ' + data.tracks[key].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + '</div>');
+            $('.makani-track-tickers').append('<div class="small-12 medium-8 large-4 columns track-ticker-listing" id="' + key + '" track-count="' + data.tracks[key] + '"><span class="remove-filter glyphicon glyphicon-remove-circle"></span> ' + key + ': ' + data.tracks[key].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + '</div>');
         }
-        gradientGenerator(data);
         colors = gradientGenerator(data);
     });
 
@@ -332,6 +330,7 @@ $(function () {
                     trackContainer.style.background = '#2e3135';
                 }, 250, trackContainer);
             }
+
             var stateContainer = document.getElementsByClassName(key)[0];
             if (stateContainer != undefined) {
                 

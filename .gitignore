@@ -13,3 +13,4 @@ npm-debug
 *.v12.suo
 obj
 *.ntvs_analysis.dat.tmp
+*.sln

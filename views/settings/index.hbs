@@ -1,0 +1,24 @@
+﻿<form class="update-settings small-8 columns" action="/settings" method="POST">
+    
+    <div class="form-group">
+        <label for="email">Name:</label>
+        <input class="update-input" type="text" name="name" placeholder="{{ user.name }}" />
+    </div>
+    <div class="form-group">
+        <label for="email">Email:</label>
+        <input class="update-input" type="email" name="email" placeholder="{{ user.email }}" />
+    </div>
+    <div class="form-group">
+        <label for="email">Password:</label>
+        <input class="update-input password-main" type="password" name="password" />
+    </div>
+    <div class="form-group">
+        <label for="email">Password Again:</label>
+        <input class="update-input password-confirm" type="password" name="passwordconfirm" />
+    </div>
+
+    <div class="login-status-box"></div>
+
+    <button type="submit" class="update-button">Update Account</button>
+    
+</form>

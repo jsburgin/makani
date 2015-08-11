@@ -62,13 +62,10 @@ module.exports = function (io) {
     countService.addCount({ track: 'all', type: -1 }, function (err) {
         if (err) {
             console.log(err);
-        } else {
-            console.log('added all count');
         }
     });
     
     function saveTotalCount() {
-        console.log(trackCountPairs.total);
         countService.changeCountValue('all', trackCountPairs.total, function (err) {
             if (err) {
                 console.log(err);
@@ -86,7 +83,10 @@ module.exports = function (io) {
             for (var i = 0; i < counts.length; i++) {
                 var count = counts[i];
                 
-                trackCountPairs.tpm[count.track] = [{ number: 0 }];
+                var currentTime = new Date();
+                currentTime.setSeconds(0);
+                
+                trackCountPairs.tpm[count.track] = [{ number: 0, time: currentTime }];
 
                 tweetCaches[count.track] = [];
                 trackCountPairs.tracks[count.track] = count.value;
@@ -101,8 +101,8 @@ module.exports = function (io) {
                 }
             }
             
-            trackCountPairs.tpm['all'] = [{ number: 0 }];
-            console.log(trackCountPairs.total);
+            trackCountPairs.tpm['all'] = [{ number: 0, time: currentTime }];
+            
 
             cb(null);
         },
@@ -125,11 +125,16 @@ module.exports = function (io) {
         for (key in trackCountPairs.tpm) {
             var tpmValue = trackCountPairs.tpm[key];
             
-            if (tpmValue.length > 10) {
+            if (tpmValue.length > 60) {
                 tpmValue.splice(0, 1);
             }
             
-            tpmValue.push({ number: 0 });
+            var currentTime = new Date();
+            currentTime.setSeconds(0);
+            
+            //console.log(currentTime);
+
+            tpmValue.push({ number: 0, time: currentTime});
         }
 
         setTimeout(refreshTweetPerMinutes, 60000);

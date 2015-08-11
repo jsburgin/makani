@@ -17,6 +17,7 @@ var routes = require('./routes/index'),
     sim = require('./routes/sim'),
     logout = require('./routes/logout'),
     create = require('./routes/create'),
+    settings = require('./routes/settings'),
     config = require('./config');
     
 
@@ -63,6 +64,7 @@ app.use('/login', login);
 app.use('/logout', logout);
 app.use('/create', create);
 app.use('/map', map);
+app.use('/settings', settings);
 app.use('/sim', sim);
 
 // catch 404 and forward to error handler

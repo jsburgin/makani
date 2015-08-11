@@ -1,3 +1,25 @@
+$(document).ready(function () {
+    $('.password-confirm').keyup(validatePass);
+
+    $('.password-confirm').focusout(function () {
+        var value = $('.password-confirm').val();
+        console.log(value);
+        if (!value) {
+            $('.login-status-box').html();
+        }
+    });
+});
+
+function validatePass() {
+    var original = $('.password-main').val();
+    var confirmed = $('.password-confirm').val();
+    if (original == confirmed) {
+        $('.login-status-box').html('');
+    } else {
+        $('.login-status-box').html('<p>passwords do not match.</p>');
+    }
+}
+
 function gradientGenerator(data) {
     var colorValues = [
         {

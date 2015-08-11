@@ -2,7 +2,6 @@
 var router = express.Router();
 var restrict = require('../auth/restrict');
 
-/* GET home page. */
 router.get('/', restrict, function (req, res, next) {
     var vm = {
         title: 'Map Feed',

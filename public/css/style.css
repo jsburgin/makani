@@ -6,6 +6,32 @@
   font-family: 'entypo', sans-serif;
 }
 
+.tpm-graph {
+    background: rgb(50, 53, 64);
+    border: 1px solid rgb(26, 29, 37);
+    margin-bottom: 15px;
+}
+
+.tpm-graph text {
+    fill: #fff;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: rgb(26, 29, 37);
+  shape-rendering: optimizeQuality;
+}
+
+.x.axis path {
+  
+}
+
+.line {
+  fill: none;
+  stroke: rgb(255, 81, 47);
+  stroke-width: 2px;
+}
 
 @media only screen { 
 	body {
@@ -53,7 +79,7 @@
 	.makani-primary-nav .side-nav li a:hover {
 		color: white;
 		background: rgb(10, 12, 14);
-		border-left: 4px solid rgb(68, 188, 238);
+		border-left: 4px solid rgb(255, 81, 47);
 	}
 
 	.makani-branding-box {
@@ -78,7 +104,17 @@
 		letter-spacing: .02rem;
 	}
 
+    .us-map {
+        width: 960px;
+        margin: 0 auto 15px;
+    }
 	
+    .us-map path {
+        fill: rgb(50, 53, 64);
+        stroke: #fff;
+        stroke-width: 0.6;
+        cursor: pointer;
+    }
 
 	.makani-content {
 		margin: 1.277em 0;
@@ -120,8 +156,17 @@
         border: 1px solid rgb(26, 29, 37);
         margin-top: 15px;
         padding: 5px 10px;
-        overflow: auto;
+        overflow: hidden;
+        height: 380px;
     }
+
+    .incoming-tweets::after {
+        display: block;
+        height: 10px;
+        background: rgb(50, 53, 64);
+        width: 100%;
+    }
+
     .incoming-tweets h5 {
         padding-bottom: 5px;
         border-bottom: 1px solid white;
@@ -132,6 +177,59 @@
     }
     .tweet-author {
         color: rgb(255, 81, 47);
+    }
+
+    .login-form {
+        margin-top: 40px;
+    }
+
+    .login-form label, .update-settings label {
+        color: #fff;
+        margin-bottom: 6px;
+    }
+
+    .login-form .login-input, .update-settings .update-input {
+        background: #0c0e12;
+        border: none;
+        margin-bottom: 6px;
+        text-indent: 3px;
+        color: #fff;
+        letter-spacing: .01rem;
+    }
+
+    .login-form .login-input:focus, .update-settings .update-input:focus {
+        background: #0c0e12;
+        color: #fff;
+    }
+
+    .login-button, .update-button {
+        margin-top: 10px;
+        width: 100%;
+        font-size: 14px;
+        padding: 12px 0;
+        background: rgb(255, 81, 47);
+    }
+
+    .login-button:hover, .update-button:hover {
+        background: rgb(202, 60, 37);
+    }
+
+    .center-text {
+        text-align: center;
+    }
+
+    .create-account-button {
+        font-size: 14px;
+        color: #fff;
+    }
+
+    .create-account-button:hover {
+        color: #fff;
+    }
+
+    .login-status-box p {
+        font-size: 14px;
+        margin-bottom: 6px;
     }
 }
 

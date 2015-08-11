@@ -56,7 +56,6 @@ module.exports = function(socket, dates, originalTrackList) {
                     console.log("done");
                 });
             }
-
         });
     }
 
