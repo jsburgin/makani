@@ -327,7 +327,7 @@ $(function () {
                 $('div#' + key).html(key + ': ' + data.keys[key].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","));
                 trackContainer.style.background = 'rgb(' + colors[key].r + ',' + colors[key].g + ',' + colors[key].b + ')';
                 window.setTimeout(function (trackContainer) {
-                    trackContainer.style.background = '#2e3135';
+                    trackContainer.style.background = 'rgb(50, 53, 64)';
                 }, 250, trackContainer);
             }
 
@@ -348,7 +348,7 @@ $(function () {
             if (totalTweets >= 10) {
                 $('.income-tweet-container div:last-child').remove();
             };
-            $('.income-tweet-container').prepend('<div><a target="_blank" href="' + data.url + '">@' + data.author + ': ' + data.text + '</a></div>');
+            $('.income-tweet-container').prepend('<div class="printed-tweet"><a target="_blank" href="' + data.url + '"><span class="tweet-author">@' + data.author + '</span>: ' + data.text + '</a></div>');
         }
 
     });

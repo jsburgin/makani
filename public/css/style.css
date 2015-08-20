@@ -116,6 +116,10 @@
         cursor: pointer;
     }
 
+    .map-incoming {
+        margin-bottom: 15px !important;
+    }
+
 	.makani-content {
 		margin: 1.277em 0;
 		padding: 0 .9375em;
@@ -157,7 +161,6 @@
         margin-top: 15px;
         padding: 5px 10px;
         overflow: hidden;
-        height: 380px;
     }
 
     .incoming-tweets::after {
@@ -188,7 +191,7 @@
         margin-bottom: 6px;
     }
 
-    .login-form .login-input, .update-settings .update-input {
+    .login-form .login-input, .update-settings .update-input, .simulate-form .sim-input {
         background: #0c0e12;
         border: none;
         margin-bottom: 6px;
@@ -197,16 +200,22 @@
         letter-spacing: .01rem;
     }
 
-    .login-form .login-input:focus, .update-settings .update-input:focus {
+    .login-form .login-input:focus, .update-settings .update-input:focus, .simulate-form .sim-input:focus {
         background: #0c0e12;
         color: #fff;
     }
 
-    .login-button, .update-button {
+    .login-button, .update-button, .sim-button {
         margin-top: 10px;
         width: 100%;
         font-size: 14px;
         padding: 12px 0;
+        background: rgb(255, 81, 47);
+    }
+
+    .sim-speed-button {
+        font-size: 14px;
+        padding: 12px 20px;
         background: rgb(255, 81, 47);
     }
 

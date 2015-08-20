@@ -1,21 +1,21 @@
 ﻿<div class="sim-form">
     <form class="simulate-form">
-        <div class="col-sm-4">
+        <div class="small-8 columns">
             <div class="form-group">
                 <label for="start-date">Start Date:</label>
-                <input type="text" class="form-control start-date"/>
+                <input type="text" class="form-control sim-input start-date"/>
             </div>
             <div class="form-group">
                 <label for="start-date">Start Time:</label>
-                <input type="text" class="form-control start-time" />
+                <input type="text" class="form-control sim-input start-time" />
             </div>
             <div class="form-group">
                 <label for="start-date">Stop Date:</label>
-                <input type="text" class="form-control stop-date" placeholder="e.g. 11/5/2015" />
+                <input type="text" class="form-control sim-input stop-date" placeholder="e.g. 11/5/2015" />
             </div>
             <div class="form-group">
                 <label for="start-date">Stop Time:</label>
-                <input type="text" class="form-control stop-time" placeholder="e.g. 07:57 or 15:02"/>
+                <input type="text" class="form-control sim-input stop-time" placeholder="e.g. 07:57 or 15:02"/>
             </div>
             <button type="submit" class="btn sim-button">Start</button>
         </div>
@@ -28,12 +28,12 @@
 
     <div class="speed">
         <div class="btn-group" role="group" aria-label="...">
-          <button speed-value="1" type="button" class="btn btn-default">1x</button>
-          <button speed-value="2" type="button" class="btn btn-default">2x</button>
-          <button speed-value="3" type="button" class="btn btn-default">3x</button>
-          <button speed-value="5" type="button" class="btn btn-default">5x</button>
-          <button speed-value="10" type="button" class="btn btn-default">10x</button>
-          <button speed-value="20" type="button" class="btn btn-default">20x</button>
+            <button speed-value="1" type="button" class="btn btn-default sim-speed-button">1x</button>
+            <button speed-value="2" type="button" class="btn btn-default sim-speed-button">2x</button>
+            <button speed-value="3" type="button" class="btn btn-default sim-speed-button">3x</button>
+            <button speed-value="5" type="button" class="btn btn-default sim-speed-button">5x</button>
+            <button speed-value="10" type="button" class="btn btn-default sim-speed-button">10x</button>
+            <button speed-value="20" type="button" class="btn btn-default sim-speed-button">20x</button>
         </div>
     </div>
 
@@ -41,20 +41,19 @@
         <svg width="960" height="600" id="statesvg"></svg>
     </div>
 
-    <div class="track-heatmap">
-        <div class="title-box">
-            <h4>Primary Tracks</h4>
-        </div>
-        <div class="heat-container">
-            <!-- heatmap content -->
-        </div>
+    <div class="large-24 columns makani-track-tickers row">
+
     </div>
     <div class="incoming-tweets">
-        <div class="title-box">
-            <h4 class="toggle-incoming">Incoming Tweets &middot; <span class="toggle-incoming-button glyphicon glyphicon-pause"></span></h4>
-            <h4 class="showing-tracks">Currently Showing: <span class="income-tweet-text"></span></h4>
+        <div class="small-24 columns">
+            <div class="title-box">
+                <h5 class="toggle-incoming showing-tracks">
+                    Incoming Tweets &middot; <span class="toggle-incoming-button entypo-pause"></span> &middot; Currently Showing: <span class="income-tweet-text"></span>
+                </h5>
+            </div>
+            <div class="income-tweet-container"></div>
         </div>
-        <div class="income-tweet-container"></div>
+
     </div>
 </div>
 

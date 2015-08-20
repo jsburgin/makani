@@ -60,7 +60,7 @@ $(function () {
     socket.on('simInit', function (data) {
         $('.track-heatmap .heat-container').html('');
         for (var key in data.tracks) {
-            $('.track-heatmap .heat-container').append('<div class="col-md-2 heatmap-entry" id="' + key + '">' + key + ': ' + 0 + '</div>');
+            $('.makani-track-tickers').append('<div class="small-12 medium-8 large-4 columns track-ticker-listing" id="' + key + '" track-count="' + data.tracks[key] + '"><span class="remove-filter glyphicon glyphicon-remove-circle"></span> ' + key + ': ' + data.tracks[key].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + '</div>');
         }
         uStates.draw("#statesvg");
     });
@@ -85,7 +85,7 @@ $(function () {
         for (key in data.keys) {
             var trackContainer = document.getElementById(key);
             if (trackContainer != null) {
-                trackContainer.innerHTML = '<span class="remove-filter glyphicon glyphicon-remove-circle"></span> ' + key + ': ' + data.keys[key];
+                trackContainer.innerHTML = '<span class="remove-filter glyphicon glyphicon-remove-circle"></span> ' + key + ': ' + data.keys[key].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
                 trackContainer.setAttribute('track-count', data.keys[key]);
                 trackContainer.classList.remove('highlight');
                 trackContainer.focus();

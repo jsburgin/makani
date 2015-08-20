@@ -12,6 +12,11 @@ var Twit = require('twit'),
 
 require('dotenv').load();
 
+
+function hours(amount) {
+    return amount * 3600000;
+}
+
 module.exports = function (io) {
     
     var client = new Twit({
@@ -32,7 +37,10 @@ module.exports = function (io) {
             total: 0
         },
         locationCounts = {},
-        startingDate = null;
+        startingDate = null,
+        resetInterval = hours(.01);
+    
+    setTimeout(resetTracks, resetInterval);
     
     // find start date for simulations
     tweetService.getFirstTweet(function (err, date) {
@@ -57,7 +65,7 @@ module.exports = function (io) {
 
     });
     
-    var stream = null;
+    var stream;
     
     countService.addCount({ track: 'all', type: -1 }, function (err) {
         if (err) {
@@ -125,14 +133,12 @@ module.exports = function (io) {
         for (key in trackCountPairs.tpm) {
             var tpmValue = trackCountPairs.tpm[key];
             
-            if (tpmValue.length > 60) {
+            if (tpmValue.length > 120) {
                 tpmValue.splice(0, 1);
             }
             
             var currentTime = new Date();
             currentTime.setSeconds(0);
-            
-            //console.log(currentTime);
 
             tpmValue.push({ number: 0, time: currentTime});
         }
@@ -221,7 +227,18 @@ module.exports = function (io) {
         }
     }
     
-    devUtility(stream);
+    // resets all tracks to 0 after a certain period of time
+    function resetTracks() {
+
+        for (key in trackCountPairs.tracks) {
+            trackCountPairs.tracks[key] = 0;
+        }
+        
+        trackCountPairs.total = 0;
+        
+        resetInterval = hours(.05);
+        setTimeout(resetTracks, resetInterval);
+    }
     
     io.on('connection', function (socket) {
         
@@ -265,81 +282,9 @@ module.exports = function (io) {
             socket.emit('updatePercentages', trackCountPairs.tracks[track], trackCountPairs.total);
         });
         
-        socket.on('addfilter', function (filterData) {
-            
-            filterData.track = filterData.track.toLowerCase();
-            if (primaryTracks.indexOf(filterData.track) == -1 && filters.indexOf(filterData.track) == -1) {
-                var newFilter = filterData.track;
-                filters.push(newFilter);
-                if (newFilter in filterUsers) {
-                    filterUsers[newFilter]++;
-                } else {
-                    filterUsers[newFilter] = 1;
-                    filters.push(newFilter);
-                    trackCountPairs.tracks[newFilter] = 0;
-                    tweetCaches[newFilter] = [];
-                }
-                
-                countService.addCount({ track: newFilter, type: 2 }, function (err) {
-                    if (err) {
-                        console.log(err);
-                    }
-                });
-                
-                userService.addFilter(filterData, function (err) {
-                    if (err) {
-                        console.log(err);
-                    }
-                    var filterPackage = {
-                        filter: newFilter,
-                        count: trackCountPairs.tracks[newFilter]
-                    }
-                    socket.emit('filtercount', filterPackage);
-                });
-
-            }
-        });
         
         socket.on('getcache', function (trackValue) {
             socket.emit('receivecache', tweetCaches[trackValue]);
-        });
-        
-        function removeFilter(filter) {
-            var localIndex = filters.indexOf(filter);
-            filters.splice(localIndex, 1);
-            if (filterUsers[filter] == 1) {
-                var index = filters.indexOf(filter);
-                filters.splice(index, 1);
-                delete trackCountPairs.tracks[filter];
-                delete filterUsers[filter];
-            } else {
-                filterUsers[filter]--;
-            }
-        }
-        
-        socket.on('removesinglefilter', function (filter) {
-            // local
-            removeFilter(filter);
-            // database
-            var filterData = {
-                track: filter,
-                userID: userEmail
-            }
-            userService.removeFilter(filterData, function (err) {
-                if (err) {
-                    console.log(err);
-                }
-            });
-            countService.removeCount(filter, function (err, filterFault) {
-                if (err) {
-                    console.log(err);
-                    process.exit(1);
-                }
-                
-                if (filterFault) {
-                    console.log('Below zero for non-user created track!');
-                }
-            });
         });
         
         socket.on('runSimulation', function (dates) {
