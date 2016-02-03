@@ -37,10 +37,8 @@ module.exports = function (io) {
             total: 0
         },
         locationCounts = {},
-        startingDate = null,
-        resetInterval = hours(.01);
-    
-    setTimeout(resetTracks, resetInterval);
+        startingDate = null;
+        //resetInterval = hours(.01);
     
     // find start date for simulations
     tweetService.getFirstTweet(function (err, date) {
@@ -133,6 +131,8 @@ module.exports = function (io) {
         for (key in trackCountPairs.tpm) {
             var tpmValue = trackCountPairs.tpm[key];
             
+            // removes the first tweet for minute object if time is over 120 minutes
+            // graph of tpms is displayed for two hours
             if (tpmValue.length > 120) {
                 tpmValue.splice(0, 1);
             }
